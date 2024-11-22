@@ -1,0 +1,57 @@
+{% extends "common/01_base.html" %}
+
+{% block title %}Project List{% endblock %}
+
+{% block content %}
+    <h1 class="my-4">Project List</h1>
+
+        <a class="my-4" href="{% url 'project_create' %}">
+            <button type="button" class="btn btn-outline-secondary custom-btn-secondary">Create Project</button>
+        </a>
+
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="thead-light">
+            <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Manager</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Start Date</th>
+                <th>Due Date</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for project in projects %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <a href="{% url 'project_detail' project.id %}">
+                            {{ project.title }}
+                        </a>
+                    </td>
+                    <td>{{ project.description|truncatewords:10 }}</td>
+                    <td>{{ project.manager.username }}</td>
+                    <td>{{ project.get_status_display }}</td>
+                    <td>{{ project.get_priority_display }}</td>
+                    <td>{{ project.start_date|date:"M d, Y" }}</td>
+                    <td>{{ project.due_date|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'project_detail' pk=project.pk %}">
+                            <button class="btn btn-info rounded-pill px-3" type="button">View</button>
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center">No projects found.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

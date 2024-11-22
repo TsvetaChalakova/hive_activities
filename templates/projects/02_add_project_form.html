@@ -1,0 +1,24 @@
+{% extends 'common/01_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'styles/03_forms.css' %}">
+{% endblock %}
+
+{% block content %}
+    <body>
+    <div class="container mt-5">
+        <div class="form-container mx-auto p-4">
+            <h2 class="text-center text-brown">Create Project</h2>
+            <form method="POST" action="{% url 'project_create' %}">
+                {% csrf_token %}
+                {{ form }}
+              
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary px-4">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+{% endblock %}

@@ -1,0 +1,23 @@
+@import "bootstrap/functions";
+@import "bootstrap/variables";
+
+$primary: $yellow-500;
+$secondary: $yellow-800;
+$success: $green;
+$info: $indigo;
+$warning: $orange;
+$danger: $pink;
+
+$custom-yellow-scale: (
+  100: $yellow-100,
+  200: $yellow-200,
+  300: $yellow-300,
+  400: $yellow-400,
+  500: $yellow-500,
+  600: $yellow-600,
+  700: $yellow-700,
+  800: $yellow-800,
+  900: $yellow-900,
+);
+
+@import "bootstrap/bootstrap";
