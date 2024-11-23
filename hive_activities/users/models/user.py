@@ -14,7 +14,6 @@ class UserType(TextChoices):
 
 class AppUser(AbstractBaseUser, PermissionsMixin):
 
-
     email = models.EmailField(
         unique=True,
     )
@@ -32,7 +31,7 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     user_type = models.CharField(
         max_length=20,
         choices=UserType.choices,
-        default=UserType.VIEWER
+        default=UserType.TEAM_MEMBER
     )
 
     groups = models.ManyToManyField(

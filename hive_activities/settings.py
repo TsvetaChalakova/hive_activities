@@ -139,7 +139,8 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = 'activity_list'
-LOGOUT_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'landing'
+AUTH_USER_MODEL = 'users.AppUser'
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'

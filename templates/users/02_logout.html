@@ -1,0 +1,11 @@
+{% extends 'common/01_base.html' %}
+
+{% block title %}Logout - Hive Activities{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h1>You have been logged out</h1>
+    <p class="lead">Thank you for using Hive Activities. See you soon!</p>
+    <a href="{% url 'login' %}" class="btn btn-primary">Log in again</a>
+</div>
+{% endblock %}

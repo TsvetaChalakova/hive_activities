@@ -7,14 +7,14 @@ from django.utils.translation import gettext as _
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, DetailView, UpdateView, CreateView
 
-from .forms import HiveAuthenticationForm, ProfileEditForm
+from .forms import HiveAuthenticationForm, ProfileEditForm, AppUserCreationForm
 from .models import UserProfile
 
 UserModel = get_user_model()
 
 
 class HiveLoginView(LoginView):
-    template_name = 'users/login.html'
+    template_name = 'users/01_login.html'
     redirect_authenticated_user = True
     authentication_form = HiveAuthenticationForm
 
@@ -31,8 +31,32 @@ class HiveLoginView(LoginView):
     def get_success_url(self):
         return reverse_lazy('dashboard')
 
+
 class HiveLogoutView(LogoutView):
-    template_name = 'users/logout.html'
+    template_name = 'users/02_logout.html'
+    success_url = reverse_lazy('landing')
+
+
+class SignUpView(CreateView):
+    model = UserModel
+    form_class = AppUserCreationForm
+    template_name = 'users/03_signup.html'
+    success_url = reverse_lazy('dashboard')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        login(self.request, self.object)
+        messages.success(self.request, "Your account has been created successfully!")
+        return response
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Please correct the errors detected.")
+        return super().form_invalid(form)
+
+    def get_success_url(self):
+        if self.object.user_type == 'PROJECT_MANAGER':
+            return reverse_lazy('dashboard')
+        return super().get_success_url()
 
 
 class ProfileDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -77,17 +101,6 @@ class AppUserCreationForm:
     pass
 
 
-class SignUpView(CreateView):
-    model = UserModel
-    form_class = AppUserCreationForm
-    template_name = 'users/register-page.html'
-    success_url = reverse_lazy('home')
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
-
-        login(self.request, self.object)
-
-        return response
 
 

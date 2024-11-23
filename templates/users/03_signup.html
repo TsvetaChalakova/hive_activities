@@ -1,0 +1,21 @@
+{% extends 'common/01_base.html' %}
+
+{% block title %}Sign Up - Hive Activities{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Sign Up</h1>
+    <p class="text-center">Create your account to start managing your activities and projects.</p>
+
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Sign Up</button>
+        </div>
+    </form>
+    <p class="text-center mt-3">
+        Already have an account? <a href="{% url 'users:login' %}">Log in here</a>.
+    </p>
+</div>
+{% endblock %}
