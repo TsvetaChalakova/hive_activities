@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
+from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponseRedirect
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, FormView
 from django.urls import reverse_lazy
-from .forms import ActivityCreateForm, ActivityTypeChangeForm
+from .forms import ActivityCreateForm, ActivityTypeChangeForm, TemporaryActivityForm
 from ..core.search import SearchService
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -20,28 +21,6 @@ class ActivityListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return Activity.objects.filter(assigned_to=self.request.user)
-
-
-class LandingPageView(ListView):
-    pass
-
-
-class ContactView(ListView):
-    pass
-
-
-class SearchView(LoginRequiredMixin, TemplateView):
-    template_name = 'common/06_search_results.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        query = self.request.GET.get('q', '')
-
-        if query:
-            context['query'] = query
-            context['results'] = SearchService.global_search(query, self.request.user)
-
-        return context
 
 
 class ActivityCreateView(CreateView):

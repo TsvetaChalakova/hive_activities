@@ -1,11 +1,31 @@
+from datetime import timedelta
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from hive_activities.projects.models import Project
 
 User = get_user_model()
+
+
+class TemporaryActivity(models.Model):
+    email = models.EmailField()
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    due_date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        """ Check if the activity is older than 7 days. """
+        return self.created_at < timezone.now() - timedelta(days=7)
+
+    def __str__(self):
+        return f"{self.title} for {self.email}"
+
+    @classmethod
+    def cleanup_expired(cls):
+        expired_activities = cls.objects.filter(created_at__lt=timezone.now() - timedelta(days=7))
+        expired_activities.delete()
 
 
 class Activity(models.Model):

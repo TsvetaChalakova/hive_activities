@@ -1,0 +1,43 @@
+{% extends 'common/01_base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-6">
+            <h1 class="display-4">Welcome to Hive Activities!</h1>
+            <p class="lead">
+                Manage your projects, collaborate with teams, and stay on top of deadlines effortlessly.
+            </p>
+            <a href="{% url 'users:signup' %}" class="btn btn-primary btn-lg">Get Started</a>
+            <a href="#" class="btn btn-secondary btn-lg">Learn More</a>
+        </div>
+        <div class="col-md-6">
+            <h2>Create a Temporary Activity</h2>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-danger">{{ field.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-success">Create Activity</button>
+            </form>
+        </div>
+    </div>
+    <div class="row mt-5">
+        <div class="col text-center">
+            <h3>Why Choose Hive Activities?</h3>
+            <p>With Hive Activities, you can:</p>
+            <ul class="list-unstyled">
+                <li><i class="bi bi-kanban"></i> Track your projects efficiently</li>
+                <li><i class="bi bi-chat"></i> Collaborate with your team</li>
+                <li><i class="bi bi-alarm"></i> Never miss a deadline</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

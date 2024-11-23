@@ -1,10 +1,11 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.utils import timezone
 
-from hive_activities.users.models import AppUser
+User = get_user_model()
 
 
 class Notification(models.Model):
@@ -17,7 +18,7 @@ class Notification(models.Model):
     )
 
     recipient = models.ForeignKey(
-        AppUser,
+        User,
         on_delete=models.CASCADE,
         related_name='notifications'
     )
@@ -60,7 +61,6 @@ class NotificationManager:
 
     @staticmethod
     def notify_task_completed(task):
-        # Notify project owner and task creator
         recipients = {task.project.owner, task.created_by}
         for recipient in recipients:
             Notification.objects.create(
@@ -73,7 +73,6 @@ class NotificationManager:
 
     @staticmethod
     def notify_comment_added(comment):
-        # Notify task assignee and previous commenters
         task = comment.task
         recipients = {task.assigned_to, task.created_by}
         previous_commenters = task.comments.exclude(

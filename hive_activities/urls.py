@@ -12,8 +12,6 @@ urlpatterns = [
     path('projects/', include('hive_activities.projects.urls')),
     path('notifications/', include('hive_activities.notifications.urls')),
 
-    # API endpoints for AJAX requests
-
     # path('api/tasks/update-status/', views.UpdateTaskStatusView.as_view(), name='update_task_status'),
     # path('api/projects/update-status/', views.UpdateProjectStatusView.as_view(), name='update_project_status'),
     # path('api/search/', views.SearchView.as_view(), name='search'),

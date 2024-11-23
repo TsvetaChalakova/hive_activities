@@ -15,7 +15,7 @@
 <nav class="navbar navbar-expand-lg navbar-custom shadow-sm">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="{% url 'landing' %}">
-            <i class="bi bi-kanban fs-4 me-2"></i> Hive Activities
+            <i class="bi bi-kanban fs-4 me-2"></i> 🐝Hive Activities
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -34,9 +34,6 @@
                         <a class="nav-link" href="#">Features</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Pricing</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="#">Contact</a>
                     </li>
                 {% endif %}
@@ -48,9 +45,9 @@
                             <i class="bi bi-person-circle"></i> {{ user.email }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="{% url 'profile-details' user.pk %}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'users:profile-detail' user.pk %}">Profile</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            <li><a class="dropdown-item" href="{% url 'users:logout' %}">Logout</a></li>
                         </ul>
                     </div>
                 {% else %}

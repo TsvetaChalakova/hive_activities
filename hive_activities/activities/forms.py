@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-from hive_activities.activities.models import Activity
+from hive_activities.activities.models import Activity, TemporaryActivity
 
 
 class ActivityCreateForm(forms.ModelForm):
@@ -55,3 +55,15 @@ class ActivityTypeChangeForm(forms.Form):
             ).exclude(
                 pk__in=[child.pk for child in activity.get_all_children()]
             )
+
+
+class TemporaryActivityForm(forms.ModelForm):
+    class Meta:
+        model = TemporaryActivity
+        fields = ['email', 'title', 'description', 'due_date']
+        widgets = {
+            'email': forms.EmailInput(attrs={'placeholder': 'Your email'}),
+            'title': forms.TextInput(attrs={'placeholder': 'Activity title'}),
+            'description': forms.Textarea(attrs={'placeholder': 'Activity description'}),
+            'due_date': forms.DateInput(attrs={'type': 'date'}),
+        }

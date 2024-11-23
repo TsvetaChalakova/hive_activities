@@ -14,8 +14,7 @@
                 <h6 class="card-subtitle mb-2 text-muted">{{ activity.get_priority_display }} | {{ activity.get_status_display }}</h6>
                 <p class="card-text">{{ activity.description|truncatewords:20 }}</p>
                 <p><strong>Due:</strong> {{ activity.due_date|date:"M d, Y" }}</p>
-                <p><strong>Assigned to:</strong> {{ activity.assigned_to.username if activity.assigned_to else "Unassigned" }}</p>
-                <p><strong>Estimated Hours:</strong> {{ }}</p>
+                <p><strong>Assigned to:</strong> </p>
                 {% if activity.is_child %}
                     <p class="text-info">Child Activity of {{ activity.parent.title }}</p>
                 {% endif %}

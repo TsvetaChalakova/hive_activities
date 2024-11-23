@@ -32,12 +32,6 @@ class HiveAuthenticationForm(AuthenticationForm):
     )
 
 
-# class AppUserCreationForm(UserCreationForm):
-#     class Meta(UserCreationForm.Meta):
-#         model = UserModel
-
-
-
 class AppUserCreationForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
@@ -70,15 +64,27 @@ class AppUserCreationForm(UserCreationForm):
         return user
 
 
+class ProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        exclude = ('user', )
+        fields = ['first_name', 'last_name']
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your first name',
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your last name',
+            }),
+        }
+        help_texts = {
+            'first_name': 'Enter your given name.',
+            'last_name': 'Enter your surname.',
+        }
 
 
 class AppUserChangeForm(UserChangeForm):
     class Meta(UserChangeForm.Meta):
         model = UserModel
-
-
-class ProfileEditForm(forms.ModelForm):
-    class Meta:
-        model = UserProfile
-        exclude = ('user', )
-

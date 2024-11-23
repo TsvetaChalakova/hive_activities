@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-from hive_activities.users.models import AppUser
-
 UserModel = get_user_model()
 
 
@@ -26,11 +24,13 @@ class UserProfile(models.Model):
     )
 
     created_at = models.DateTimeField(
-        auto_now_add=True,  # Automatically sets the field to now when the object is first created
+        auto_now_add=True,
+        verbose_name='created at',
     )
 
     updated_at = models.DateTimeField(
-        auto_now=True,  # Automatically updates the field to now every time the object is saved
+        auto_now=True,
+        verbose_name='updated at',
     )
 
     def get_full_name(self):

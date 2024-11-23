@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'hive_activities.notes.apps.NotesConfig',
     'hive_activities.notifications.apps.NotificationsConfig',
     'hive_activities.projects.apps.ProjectsConfig',
-    'hive_activities.users.apps.UsersConfig'
+    'hive_activities.users.apps.UsersConfig',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -150,3 +151,11 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': timedelta(hours=1),
     },
 }
+
+# Notification settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@gmail.com'
+EMAIL_HOST_PASSWORD = 'your-email-password'

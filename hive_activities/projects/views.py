@@ -63,7 +63,7 @@ class ProjectDeleteView(DeleteView):
 
 class ProjectMembersView(ListView):
     model = ProjectMembership
-    template_name = 'projects/project_members.html'
+    template_name = 'projects/04_project_members.html'
     context_object_name = 'memberships'
 
     def get_queryset(self):
@@ -74,7 +74,7 @@ class ProjectMembersView(ListView):
 class AddProjectMemberView(CreateView):
     model = ProjectMembership
     fields = ['user', 'role']
-    template_name = 'projects/add_project_member.html'
+    template_name = 'projects/05_add_project_member.html'
     success_url = reverse_lazy('project_members')
 
     def get_context_data(self, **kwargs):

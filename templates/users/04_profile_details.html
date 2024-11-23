@@ -1,0 +1,62 @@
+{% extends 'common/01_base.html' %}
+
+{% block title %}Profile Details{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Profile Details</h5>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ object.get_full_name }}</h5>
+                    <p class="card-text"><strong>Email:</strong> {{ object.user.email }}</p>
+                    <p class="card-text"><strong>First Name:</strong> {{ object.first_name }}</p>
+                    <p class="card-text"><strong>Last Name:</strong> {{ object.last_name }}</p>
+                </div>
+                
+                <div class="card-footer text-end">
+                    <a href="{% url 'users:profile-edit' object.user.pk %}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-pencil-square"></i> Edit Profile
+                    </a>
+                    <a href="{% url 'users:profile-delete' object.user.pk %}" class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash"></i> Delete Profile
+                    </a>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h4 class="mb-3">Profile Statistics</h4>
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h6 class="card-title">Total Projects</h6>
+                                <h3 class="card-text text-primary">{{ projects_count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h6 class="card-title">Notifications</h6>
+                                <h3 class="card-text text-success">{{ notifications_count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card shadow border-0">
+                            <div class="card-body">
+                                <h6 class="card-title">Total Activities</h6>
+                                <h3 class="card-text text-warning">{{ activities_count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
