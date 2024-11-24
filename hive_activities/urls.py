@@ -1,6 +1,7 @@
 from django.urls import path, include
 
-from hive_activities.activities.views import ActivityListView, LandingPageView, ContactView
+from hive_activities.activities.views import ActivityListView
+from hive_activities.core.views import LandingPageView, ContactView
 
 app_name = 'hive-activities'
 

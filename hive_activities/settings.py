@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'hive_activities.projects.apps.ProjectsConfig',
     'hive_activities.users.apps.UsersConfig',
     'widget_tweaks',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -145,6 +146,8 @@ AUTH_USER_MODEL = 'users.AppUser'
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     'check-due-dates': {
         'task': 'taskflow.tasks.check_approaching_due_dates',
