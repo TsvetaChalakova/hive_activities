@@ -1,42 +1,35 @@
 {% extends 'common/01_base.html' %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row">
-        <div class="col-md-6">
-            <h1 class="display-4">Welcome to Hive Activities!</h1>
-            <p class="lead">
-                Manage your projects, collaborate with teams, and stay on top of deadlines effortlessly.
-            </p>
-            <a href="{% url 'users:signup' %}" class="btn btn-primary btn-lg">Get Started</a>
-            <a href="#" class="btn btn-secondary btn-lg">Learn More</a>
-        </div>
-        <div class="col-md-6">
-            <h2>Create a Temporary Activity</h2>
-            <form method="post" novalidate>
-                {% csrf_token %}
-                {% for field in form %}
-                    <div class="mb-3">
-                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}
-                            <div class="text-danger">{{ field.errors|join:", " }}</div>
-                        {% endif %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h1 class="mb-4">Welcome to Hive Activities</h1>
+            <p class="lead mb-5">Choose how you'd like to use our app:</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Individual Use</h5>
+                            <p class="card-text">Create and manage your personal tasks without signing up.</p>
+                            <a href="{% url 'activities:individual_dashboard' %}" 
+                               class="btn btn-primary">Start Now</a>
+                        </div>
                     </div>
-                {% endfor %}
-                <button type="submit" class="btn btn-success">Create Activity</button>
-            </form>
-        </div>
-    </div>
-    <div class="row mt-5">
-        <div class="col text-center">
-            <h3>Why Choose Hive Activities?</h3>
-            <p>With Hive Activities, you can:</p>
-            <ul class="list-unstyled">
-                <li><i class="bi bi-kanban"></i> Track your projects efficiently</li>
-                <li><i class="bi bi-chat"></i> Collaborate with your team</li>
-                <li><i class="bi bi-alarm"></i> Never miss a deadline</li>
-            </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Team Collaboration</h5>
+                            <p class="card-text">Work together with your team on shared projects.</p>
+                            <a href="{% url 'users:login' %}" 
+                               class="btn btn-success">Login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

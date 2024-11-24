@@ -58,7 +58,6 @@ class AppUserCreationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=commit)
         if commit:
-            # Automatically create an associated UserProfile
             from .models import UserProfile
             UserProfile.objects.create(user=user)
         return user

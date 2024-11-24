@@ -1,167 +1,62 @@
-from datetime import timedelta
-from django.utils import timezone
+from celery.utils.time import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from hive_activities.projects.models import Project
 
 User = get_user_model()
 
 
-class TemporaryActivity(models.Model):
-    email = models.EmailField()
-    title = models.CharField(max_length=100)
-    description = models.TextField()
-    due_date = models.DateField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def is_expired(self):
-        """ Check if the activity is older than 7 days. """
-        return self.created_at < timezone.now() - timedelta(days=7)
-
-    def __str__(self):
-        return f"{self.title} for {self.email}"
-
-    @classmethod
-    def cleanup_expired(cls):
-        expired_activities = cls.objects.filter(created_at__lt=timezone.now() - timedelta(days=7))
-        expired_activities.delete()
-
-
 class Activity(models.Model):
-    STATUS_CHOICES = (
-        ('OPEN', 'Open'),
-        ('ASSIGNED', 'Assigned'),
+    STATUS_CHOICES = [
+        ('TODO', 'To Do'),
         ('IN_PROGRESS', 'In Progress'),
-        ('PENDING', 'Pending'),
-        ('IN_REVIEW', 'In Review'),
-        ('CLOSED', 'Closed'),
-    )
+        ('COMPLETED', 'Completed')
+    ]
 
-    PRIORITY_CHOICES = (
+    PRIORITY_CHOICES = [
         ('LOW', 'Low'),
         ('MEDIUM', 'Medium'),
-        ('HIGH', 'High'),
-        ('URGENT', 'Urgent'),
-    )
-
-    ACTIVITY_TYPE_CHOICES = (
-        ('PARENT', 'Parent Activity'),
-        ('CHILD', 'Child Activity'),
-    )
+        ('HIGH', 'High')
+    ]
 
     title = models.CharField(max_length=200)
-    description = models.TextField()
-    project = models.ForeignKey(
-        Project,
+    description = models.TextField(blank=True)
+    created_by = models.ForeignKey(
+        User,
+        related_name='created_activities',
         on_delete=models.CASCADE,
-        related_name='activities'
-    )
-    activity_type = models.CharField(
-        max_length=20,
-        choices=ACTIVITY_TYPE_CHOICES,
-        default='PARENT'
-    )
-    parent = models.ForeignKey(
-        'self',
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
-        related_name='children'
     )
     assigned_to = models.ForeignKey(
         User,
-        on_delete=models.DO_NOTHING,
+        related_name='assigned_activities',
         null=True,
         blank=True,
-        related_name='assigned_activities'
+        on_delete=models.SET_NULL
     )
-    created_by = models.ForeignKey(
-        User,
-        on_delete=models.DO_NOTHING,
-        related_name='created_activities'
+    project = models.ForeignKey(
+        Project,
+        related_name='activities',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
     )
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='OPEN',
+        default='TODO'
     )
     priority = models.CharField(
-        max_length=20,
+        max_length=10,
         choices=PRIORITY_CHOICES,
-        default='LOW',
+        default='MEDIUM'
     )
-    due_date = models.DateTimeField()
+    due_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['-priority', 'due_date']
-        verbose_name_plural = 'Activities'
-
-    def __str__(self):
-        return f"{self.title} ({'Child' if self.parent else 'Parent'})"
-
-    def clean(self):
-        if self.parent:
-            if self.parent.project != self.project:
-                raise ValidationError("Child activity must belong to the same project as its parent.")
-            if self.parent == self:
-                raise ValidationError("An activity cannot be its own parent.")
-            if self.pk:
-                children = self.get_all_children()
-                if self.parent.pk in [child.pk for child in children]:
-                    raise ValidationError("Circular dependency detected in activity relationships.")
-            if self.due_date > self.parent.due_date:
-                raise ValidationError("Child activity due date cannot be later than parent activity due date.")
-
-            self.activity_type = 'CHILD'
-        else:
-
-            self.activity_type = 'PARENT'
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
-
-    def get_all_children(self):
-        children = []
-        for child in self.children.all():
-            children.append(child)
-            children.extend(child.get_all_children())
-        return children
-
-    def change_to_child(self, new_parent):
-        if new_parent == self:
-            raise ValidationError("An activity cannot be its own parent.")
-
-        if self.children.exists():
-            raise ValidationError("Cannot convert an activity with children to a child activity.")
-
-        if new_parent.project != self.project:
-            raise ValidationError("Parent activity must be in the same project.")
-
-        self.parent = new_parent
-        self.activity_type = 'CHILD'
-        self.save()
-
-    def change_to_parent(self):
-        self.parent = None
-        self.activity_type = 'PARENT'
-        self.save()
-
-    @property
-    def is_parent(self):
-        return self.activity_type == 'PARENT'
-
-    @property
-    def is_child(self):
-        return self.activity_type == 'CHILD'
-
-    @property
-    def is_due_date_approaching(self):
-        return self.due_date - timezone.now() <= timezone.timedelta(days=2)
+    session_key = models.CharField(max_length=40, null=True, blank=True)
 
     @property
     def is_overdue(self):
-        return self.due_date < timezone.now()
+        return self.due_date and self.due_date < timezone.now().date()

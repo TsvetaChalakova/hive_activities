@@ -1,3 +1,6 @@
+from time import timezone
+
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -5,21 +8,14 @@ User = get_user_model()
 
 
 class Project(models.Model):
-    STATUS_CHOICES = (
-        ('AWARDED', 'Awarded'),
+    STATUS_CHOICES = [
         ('IN_PROGRESS', 'In Progress'),
         ('ON_HOLD', 'On Hold'),
         ('COMPLETED', 'Completed'),
-        ('TERMINATED', 'Terminated'),
-    )
+    ]
 
-    PRIORITY_CHOICES = (
-        ('STANDARD', 'Standard'),
-        ('HIGH_PRIORITY', 'High Priority'),
-    )
-
-    title = models.CharField(max_length=200, unique=True)
-    description = models.TextField()
+    title = models.CharField(max_length=200, unique=True, help_text="Enter a unique project title")
+    description = models.TextField(blank=True, null=True, help_text="Describe the project goals and scope")
     manager = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
@@ -33,17 +29,20 @@ class Project(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='AWARDED',
+        default='IN_PROGRESS',
     )
-    priority = models.CharField(
-        max_length=20,
-        choices=PRIORITY_CHOICES,
-        default='STANDARD',
-    )
-    start_date = models.DateField()
-    due_date = models.DateField()
+
+    start_date = models.DateField(help_text="Project start date")
+    due_date = models.DateField(help_text="Project deadline")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        if self.due_date and self.start_date and self.due_date < self.start_date:
+            raise ValidationError("Due date cannot be before start date")
+
+    def __str__(self):
+        return f"{self.title} ({self.get_status_display()})"
 
     class Meta:
         ordering = ['-created_at']
@@ -51,11 +50,12 @@ class Project(models.Model):
             ("can_change_project_status", "Can change project status"),
             ("can_assign_team_members", "Can assign team members"),
         ]
+        verbose_name = "Project"
+        verbose_name_plural = "Projects"
 
 
 class ProjectMembership(models.Model):
     ROLES = (
-        ('VIEWER', 'Viewer'),
         ('MEMBER', 'Team Member'),
         ('MANAGER', 'Project Manager'),
     )
@@ -65,7 +65,12 @@ class ProjectMembership(models.Model):
     role = models.CharField(max_length=20, choices=ROLES)
     joined_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"{self.user.name} - {self.project.title} ({self.get_role_display()})"
+
     class Meta:
         unique_together = ['user', 'project']
+        verbose_name = "Project Membership"
+        verbose_name_plural = "Project Memberships"
 
 

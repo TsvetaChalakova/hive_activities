@@ -6,7 +6,7 @@ from hive_activities.projects.models import Project, ProjectMembership, User
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ['title', 'description', 'manager', 'priority', 'start_date', 'due_date']
+        fields = ['title', 'description', 'manager', 'start_date', 'due_date']
         widgets = {
             'manager': forms.HiddenInput(),
             'start_date': forms.DateInput(attrs={
@@ -24,7 +24,6 @@ class ProjectForm(forms.ModelForm):
         }
         labels = {
             'title': 'Project Title',
-            'priority': 'Project Priority',
             'description': 'Project Description'
         }
 

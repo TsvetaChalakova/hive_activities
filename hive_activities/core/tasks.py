@@ -1,4 +1,4 @@
-# # activities.py (Celery tasks for periodic checks)
+# # tasks.py (Celery tasks for periodic checks)
 # from celery import shared_task
 #
 #

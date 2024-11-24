@@ -9,75 +9,80 @@
     {% block extra_css %}{% endblock %}
 </head>
 
-<body class="d-flex flex-column min-vh-100 bg-light">
+<body class="d-flex flex-column min-vh-100">
+
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
 
-<nav class="navbar navbar-expand-lg navbar-custom shadow-sm">
-    <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center" href="{% url 'landing' %}">
-            <i class="bi bi-kanban fs-4 me-2"></i> 🐝Hive Activities
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                {% if user.is_authenticated %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'activities:home' %}">
+                🐝 Hive Activities
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'project_list' %}">Projects</a>
+                        <a class="nav-link" href="{% url 'activities:individual_dashboard' %}">Individual</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Activities</a>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Contact</a>
-                    </li>
-                {% endif %}
-            </ul>
-            <div class="navbar-nav">
-                {% if user.is_authenticated %}
-                    <div class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle"></i> {{ user.email }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="{% url 'users:profile-detail' user.pk %}">Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'users:logout' %}">Logout</a></li>
-                        </ul>
-                    </div>
-                {% else %}
-                    <a class="nav-link" href="#">Login</a>
-                    <a class="nav-link" href="#">Sign Up</a>
-                {% endif %}
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'activities:team_dashboard' %}">Team</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'activities:team_dashboard' %}">Projects</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'activities:team_dashboard' %}">Notifications</a>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+                <div class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> {{ user.email }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'users:profile-detail' user.pk %}">Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'users:logout' %}">Logout</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a class="nav-link" href="{% url 'users:signup' %}">Sign Up</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
-        <form class="d-flex" action="#" method="get">
-            <input class="form-control me-2" type="search" name="q" placeholder="Search..." aria-label="Search">
-            <button class="btn btn-outline-light" type="submit">Search</button>
-        </form>
-    </div>
-</nav>
-
-
-<main class="container py-4">
-    {% block content %}
-    {% endblock %}
-</main>
-
-
-<footer class="bg-dark text-light py-3 mt-auto">
-    <div class="container text-center">
-        <small>&copy; {{ current_year }} Hive Activities. All rights reserved.</small>
-    </div>
-</footer>
-
-
-<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-{% block extra_js %}{% endblock %}
+    </nav>
+    
+    <main class="container py-4">
+        {% block content %}
+        {% endblock %}
+    </main>
+    
+    <footer class="mt-auto py-3 bg-dark text-light">
+        <div class="container text-center">
+            <small>&copy; {% now "Y" %} Hive Activities</small>
+        </div>
+    </footer>
+    
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
+

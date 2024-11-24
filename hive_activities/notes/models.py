@@ -7,18 +7,18 @@ User = get_user_model()
 
 
 class Note(models.Model):
-    task = models.ForeignKey(
+    activity = models.ForeignKey(
         Activity,
         on_delete=models.CASCADE,
         related_name='comments'
     )
-    author = models.ForeignKey(
+    content = models.TextField()
+    created_by = models.ForeignKey(
         User,
         on_delete=models.DO_NOTHING,
         related_name='task_comments'
     )
-    content = models.TextField()
-    is_public = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_closed = models.BooleanField(default=False)
 

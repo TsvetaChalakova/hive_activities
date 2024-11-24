@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext as _
@@ -9,7 +9,6 @@ from django.views.generic import DeleteView, DetailView, UpdateView, CreateView
 
 from .forms import HiveAuthenticationForm, ProfileEditForm, AppUserCreationForm
 from .models import UserProfile
-from ..activities.models import TemporaryActivity
 
 UserModel = get_user_model()
 
@@ -30,22 +29,17 @@ class HiveLoginView(LoginView):
         return super().form_invalid(form)
 
     def get_success_url(self):
-        return reverse_lazy('dashboard')
+        return reverse_lazy('activities:team_dashboard')
 
 
 class SignUpView(CreateView):
     model = UserModel
     form_class = AppUserCreationForm
     template_name = 'users/03_signup.html'
-    success_url = reverse_lazy('dashboard')
+    success_url = reverse_lazy('activities:team_dashboard')
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        email = form.cleaned_data['email']
-        temporary_activities = TemporaryActivity.objects.filter(email=email)
-        for activity in temporary_activities:
-            activity.email = self.object.email  # Link the temporary activity to the registered user.
-            activity.save()
         login(self.request, self.object)
         messages.success(self.request, "Your account has been created successfully!")
         return response
@@ -53,11 +47,6 @@ class SignUpView(CreateView):
     def form_invalid(self, form):
         messages.error(self.request, "Please correct the errors detected.")
         return super().form_invalid(form)
-
-    def get_success_url(self):
-        if self.object.user_type == 'PROJECT_MANAGER':
-            return reverse_lazy('dashboard')
-        return super().get_success_url()
 
 
 class ProfileDetailView(LoginRequiredMixin, DetailView):

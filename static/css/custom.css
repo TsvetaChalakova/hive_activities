@@ -11845,4 +11845,14 @@ textarea.form-control-lg {
   }
 }
 
+.badge.bg-todo { background-color: #6c757d; }
+.badge.bg-in_progress { background-color: #007bff; }
+.badge.bg-completed { background-color: #28a745; }
+.text-danger { font-weight: bold; }
+
+.list-group {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
 /*# sourceMappingURL=custom.css.map */

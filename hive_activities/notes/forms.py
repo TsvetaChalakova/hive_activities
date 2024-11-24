@@ -1,10 +1,10 @@
 from django import forms
-from .models import Project, Task, TimeEntry, Comment, ProjectMembership
+from hive_activities.notes.models import Note
 
 
-class CommentForm(forms.ModelForm):
+class NoteForm(forms.ModelForm):
     class Meta:
-        model = Comment
+        model = Note
         fields = ['content']
         widgets = {
             'content': forms.Textarea(attrs={'rows': 3}),

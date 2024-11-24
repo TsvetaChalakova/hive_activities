@@ -5,8 +5,8 @@
 #
 # @admin.register(Project)
 # class ProjectAdmin(admin.ModelAdmin):
-#     list_display = ('title', 'manager', 'status', 'priority', 'start_date', 'due_date', 'team_size')
-#     list_filter = ('status', 'priority', 'start_date')
+#     list_display = ('title', 'manager', 'status', 'start_date', 'due_date', 'team_size')
+#     list_filter = ('status', 'start_date')
 #     search_fields = ('title', 'description', 'manager__email')
 #     date_hierarchy = 'created_at'
 #     actions = ['mark_as_completed', 'mark_as_on_hold']
