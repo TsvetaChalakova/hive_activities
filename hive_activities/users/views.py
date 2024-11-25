@@ -62,7 +62,6 @@ class ProfileDetailView(LoginRequiredMixin, DetailView):
         context['projects'] = user.projects.count()
         context['activities'] = user.assigned_activities.count()
         context['notifications'] = user.notifications.count()
-        context['temporary_activities'] = TemporaryActivity.objects.filter(email=user.email).count()
         return context
 
 

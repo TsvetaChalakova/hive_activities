@@ -1,6 +1,8 @@
 from celery.utils.time import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils.timezone import now
+
 from hive_activities.projects.models import Project
 
 User = get_user_model()
@@ -59,4 +61,4 @@ class Activity(models.Model):
 
     @property
     def is_overdue(self):
-        return self.due_date and self.due_date < timezone.now().date()
+        return self.due_date and self.due_date < now().date()

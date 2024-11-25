@@ -10,13 +10,13 @@ class Note(models.Model):
     activity = models.ForeignKey(
         Activity,
         on_delete=models.CASCADE,
-        related_name='comments'
+        related_name='notes'
     )
     content = models.TextField()
     created_by = models.ForeignKey(
         User,
         on_delete=models.DO_NOTHING,
-        related_name='task_comments'
+        related_name='note_created_by',
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

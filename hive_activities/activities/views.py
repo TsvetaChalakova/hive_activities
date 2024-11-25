@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
-from .forms import ActivityForm
+from .forms import IndividualActivityForm, LoggedInUserActivityForm
 from .models import Activity
 from ..core.helpers import export_to_csv, export_to_excel
 from ..notes.forms import NoteForm
@@ -31,7 +31,7 @@ def individual_view(request):
     ).order_by('-created_at')
 
     if request.method == 'POST':
-        form = ActivityForm(request.POST)
+        form = IndividualActivityForm(request.POST)
         if form.is_valid():
             activity = form.save(commit=False)
             activity.session_key = request.session.session_key
@@ -39,7 +39,7 @@ def individual_view(request):
             messages.success(request, 'Activity created successfully!')
             return redirect('activities:individual_dashboard')
     else:
-        form = ActivityForm()
+        form = IndividualActivityForm()
 
     export_format = request.GET.get('export')
     if export_format == 'csv':
@@ -62,7 +62,7 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
         queryset = Activity.objects.filter(
             Q(assigned_to=self.request.user) |
             Q(project__team_members=self.request.user),
-            project__isnull=False
+            project__isnull=True
         ).select_related(
             'project',
             'assigned_to'
@@ -80,7 +80,7 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
             team_members=self.request.user
         ).order_by('title')
         context['selected_project'] = self.request.GET.get('project')
-        context['form'] = ActivityForm()
+        context['form'] = LoggedInUserActivityForm()
         return context
 
     def export_to_csv(self, queryset):
@@ -88,10 +88,9 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
         response['Content-Disposition'] = 'attachment; filename="activities.csv"'
 
         writer = csv.writer(response)
-        # Write header
+
         writer.writerow(['Title', 'Project', 'Status', 'Assigned To', 'Due Date'])
 
-        # Write data
         for activity in queryset:
             writer.writerow([
                 activity.title,
@@ -150,7 +149,7 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
 
 class ActivityCreateView(CreateView):
     model = Activity
-    form_class = ActivityForm
+    form_class = IndividualActivityForm
     template_name = 'activities/activity_form_modal.html'
     success_message = "Activity was created successfully!"
     success_url = reverse_lazy('activities:team_dashboard')
@@ -168,7 +167,7 @@ class ActivityCreateView(CreateView):
             return JsonResponse({
                 'status': 'success',
                 'message': self.success_message,
-                'redirect_url': self.get_success_url()
+                'redirect_url': 'activities:team_dashboard',
             })
         return response
 
@@ -180,53 +179,25 @@ class ActivityCreateView(CreateView):
             }, status=400)
         return super().form_invalid(form)
 
-    # def get_success_url(self):
-    #     if self.object.project:
-    #         return reverse_lazy('activities:team_dashboard')
-    #     return reverse_lazy('activities:individual_dashboard')
+
+class ActivityDetailView(LoginRequiredMixin, DetailView):
+    model = Activity
+    template_name = 'activities/02_activity_detail.html'
 
 
-class ActivityDetailView(DetailView):
-    pass
+class ActivityUpdateView(LoginRequiredMixin, UpdateView):
+    model = Activity
+    form_class = LoggedInUserActivityForm
+    template_name = 'activities/03_activity_update.html'
+
+    def get_success_url(self):
+        return reverse_lazy('activities:activity_detail', kwargs={'pk': self.object.pk})
 
 
-class ActivityUpdateView(UpdateView):
-    pass
+class ActivityStatusUpdate(LoginRequiredMixin, UpdateView):
+    model = Activity
+    fields = ['status']
+    http_method_names = ['post']
 
-
-class ActivityDeleteView(DeleteView):
-    pass
-
-
-
-
-
-@login_required
-def activity_detail(request, pk):
-    """Detail view for an activity, including notes"""
-    activity = get_object_or_404(Activity, pk=pk)
-    notes = activity.notes.all().order_by('-created_at')
-    note_form = NoteForm()
-
-    if request.method == 'POST':
-        note_form = NoteForm(request.POST)
-        if note_form.is_valid():
-            note = note_form.save(commit=False)
-            note.activity = activity
-            note.created_by = request.user
-            note.save()
-            # Create notifications for team members
-            if activity.project:
-                for member in activity.project.team_members.all():
-                    Notification.objects.create(
-                        recipient=member,
-                        note=note
-                    )
-            messages.success(request, 'Note added successfully!')
-            return redirect('activities:activity_detail', pk=pk)
-
-    return render(request, 'activities/activity_detail.html', {
-        'activity': activity,
-        'notes': notes,
-        'note_form': note_form,
-    })
+    def get_success_url(self):
+        return self.request.META.get('HTTP_REFERER', reverse_lazy('activities:team_dashboard'))

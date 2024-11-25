@@ -1,10 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'common/01_base.html' %}
 
-</body>
-</html>
+{% block content %}
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">{{ activity.title }}</h3>
+                <div>
+                    <a href="{% url 'activities:activity_edit' activity.pk %}" class="btn btn-primary">Edit</a>
+                    <a href="{% url 'activities:team_dashboard' %}" class="btn btn-secondary">Back</a>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5>Description</h5>
+                        <p>{{ activity.description|default:"No description provided" }}</p>
+
+                        <h5 class="mt-4">Notes</h5>
+                        {% if has_notes %}
+                            {% for note in notes %}
+                                {{ note.description }}
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info">
+                                <p class="mb-0">No notes yet.
+                                    {% if can_add_notes %}
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#addNoteModal">Add the first note</a>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5>Details</h5>
+                                <dl>
+                                    <dt>Status</dt>
+                                    <dd><span class="badge bg-{{ activity.status|lower }}">{{ activity.get_status_display }}</span></dd>
+
+                                    <dt>Project</dt>
+                                    <dd>{{ activity.project.title }}</dd>
+
+                                    <dt>Assigned To</dt>
+                                    <dd>{{ activity.assigned_to.get_full_name }}</dd>
+
+                                    <dt>Due Date</dt>
+                                    <dd>{{ activity.due_date|default:"No due date" }}</dd>
+
+                                    <dt>Created</dt>
+                                    <dd>{{ activity.created_at|date }}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

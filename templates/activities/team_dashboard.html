@@ -76,7 +76,7 @@
                                 </td>
                                 <td>
                                     {% if activity.assigned_to %}
-                                        {{ activity.assigned_to.get_full_name|default:activity.assigned_to.email }}
+                                        {{ activity.assigned_to.get_full_name }}
                                     {% else %}
                                         <span class="text-muted">Unassigned</span>
                                     {% endif %}
@@ -107,16 +107,17 @@
                                                     Edit
                                                 </a>
                                             </li>
-                                            {% if activity.assigned_to == request.user %}
-                                                <li>
-                                                    <a class="dropdown-item" href="#"
-                                                       data-bs-toggle="modal"
-                                                       data-bs-target="#updateStatusModal"
-                                                       data-activity-id="{{ activity.id }}">
-                                                        Update Status
-                                                    </a>
-                                                </li>
-                                            {% endif %}
+
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'activities:activity_status_update' activity.id %}"
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#updateStatusModal"
+                                                   data-activity-id="{{ activity.id }}">
+                                                    Update Status
+                                                </a>
+
+                                            </li>
+
                                         </ul>
                                     </div>
                                 </td>
@@ -166,85 +167,130 @@
     </div>
 
     <div class="modal fade" id="newActivityModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Activity</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalFormErrors" class="alert alert-danger" style="display: none;"></div>
+                    <form method="post" action="{% url 'activities:activity_create' %}" id="createActivityForm">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        {% if selected_project %}
+                            <input type="hidden" name="project" value="{{ selected_project }}">
+                        {% endif %}
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitActivity">Create Activity</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('newActivityModal');
+            const form = document.getElementById('createActivityForm');
+            const submitBtn = document.getElementById('submitActivity');
+            const errorDiv = document.getElementById('modalFormErrors');
+
+            modal.addEventListener('hidden.bs.modal', function () {
+                form.reset();
+                errorDiv.style.display = 'none';
+                errorDiv.innerHTML = '';
+            });
+
+            submitBtn.addEventListener('click', function() {
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+
+                            const modalInstance = bootstrap.Modal.getInstance(modal);
+                            modalInstance.hide();
+
+
+                            const toast = new bootstrap.Toast(document.createElement('div'));
+                            toast.innerText = data.message;
+                            document.body.appendChild(toast._element);
+                            toast.show();
+
+
+                            window.location.href = data.redirect_url;
+                        } else {
+
+                            errorDiv.style.display = 'block';
+                            errorDiv.innerHTML = Object.entries(data.errors)
+                                .map(([field, errors]) => `<p>${field}: ${errors.join(', ')}</p>`)
+                                .join('');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        errorDiv.style.display = 'block';
+                        errorDiv.innerHTML = '<p>An error occurred. Please try again.</p>';
+                    });
+            });
+        });
+    </script>
+{% endblock %}
+
+<div class="modal fade" id="updateStatusModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">New Activity</h5>
+                <h5 class="modal-title">Update Status</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div id="modalFormErrors" class="alert alert-danger" style="display: none;"></div>
-                <form method="post" action="{% url 'activities:activity_create' %}" id="createActivityForm">
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    {% if selected_project %}
-                        <input type="hidden" name="project" value="{{ selected_project }}">
-                    {% endif %}
-                </form>
+                <label for="statusSelect"></label><select class="form-select" id="statusSelect">
+                    <option value="TODO">To Do</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="COMPLETED">Completed</option>
+                </select>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="submitActivity">Create Activity</button>
+                <button type="button" class="btn btn-primary" onclick="updateStatus()">Save</button>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('newActivityModal');
-    const form = document.getElementById('createActivityForm');
-    const submitBtn = document.getElementById('submitActivity');
-    const errorDiv = document.getElementById('modalFormErrors');
-    
-    modal.addEventListener('hidden.bs.modal', function () {
-        form.reset();
-        errorDiv.style.display = 'none';
-        errorDiv.innerHTML = '';
-    });
+    let currentActivityId;
 
-    submitBtn.addEventListener('click', function() {
-        const formData = new FormData(form);
-        
-        fetch(form.action, {
+    function updateStatus() {
+        const status = document.getElementById('statusSelect').value;
+        fetch(`/activities/${currentActivityId}/status/`, {
             method: 'POST',
-            body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
             },
-            credentials: 'same-origin'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
+            body: JSON.stringify({ status: status })
+        }).then(() => window.location.reload());
+    }
 
-                const modalInstance = bootstrap.Modal.getInstance(modal);
-                modalInstance.hide();
-                
-
-                const toast = new bootstrap.Toast(document.createElement('div'));
-                toast.innerText = data.message;
-                document.body.appendChild(toast._element);
-                toast.show();
-                
-
-                window.location.href = data.redirect_url;
-            } else {
-
-                errorDiv.style.display = 'block';
-                errorDiv.innerHTML = Object.entries(data.errors)
-                    .map(([field, errors]) => `<p>${field}: ${errors.join(', ')}</p>`)
-                    .join('');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            errorDiv.style.display = 'block';
-            errorDiv.innerHTML = '<p>An error occurred. Please try again.</p>';
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('updateStatusModal');
+        modal.addEventListener('show.bs.modal', event => {
+            currentActivityId = event.relatedTarget.dataset.activityId;
         });
     });
-});
 </script>
-{% endblock %}
