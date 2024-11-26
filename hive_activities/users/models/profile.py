@@ -33,5 +33,5 @@ class UserProfile(models.Model):
         verbose_name='updated at',
     )
 
-    def get_full_name(self):
+    def __str__(self):
         return f"{self.first_name} {self.last_name}"

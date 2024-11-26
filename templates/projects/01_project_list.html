@@ -1,57 +1,35 @@
-{% extends "common/01_base.html" %}
-
-{% block title %}Project List{% endblock %}
+{% extends 'common/01_base.html' %}
 
 {% block content %}
-    <h1 class="my-4">Project List</h1>
-
-        <a class="my-4" href="{% url 'project_create' %}">
-            <button type="button" class="btn btn-outline-secondary custom-btn-secondary">Create Project</button>
-        </a>
-
-
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover">
-            <thead class="thead-light">
-            <tr>
-                <th>#</th>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Manager</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Start Date</th>
-                <th>Due Date</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for project in projects %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>
-                        <a href="{% url 'project_detail' project.id %}">
-                            {{ project.title }}
-                        </a>
-                    </td>
-                    <td>{{ project.description|truncatewords:10 }}</td>
-                    <td>{{ project.manager.username }}</td>
-                    <td>{{ project.get_status_display }}</td>
-                    <td>{{ project.get_priority_display }}</td>
-                    <td>{{ project.start_date|date:"M d, Y" }}</td>
-                    <td>{{ project.due_date|date:"M d, Y" }}</td>
-                    <td>
-                        <a href="{% url 'project_detail' pk=project.pk %}">
-                            <button class="btn btn-info rounded-pill px-3" type="button">View</button>
-                        </a>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="9" class="text-center">No projects found.</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Projects</h2>
+        <a href="{% url 'projects:project_create' %}" class="btn btn-primary">New Project</a>
     </div>
+
+    <div class="row">
+        {% for project in projects %}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ project.title }}</h5>
+                        <p class="card-text">{{ project.description|truncatewords:30 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">{{ project.get_status_display }}</span>
+                            <a href="{% url 'projects:project_detail' project.pk %}" 
+                               class="btn btn-outline-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p class="text-center">No projects found. Create your first project!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}
+
+
+

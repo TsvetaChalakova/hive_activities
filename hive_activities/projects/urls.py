@@ -4,6 +4,8 @@ from hive_activities.activities.views import ActivityCreateView
 from hive_activities.projects.views import ProjectListView, ProjectCreateView, ProjectDetailView, ProjectUpdateView, \
     ProjectDeleteView, ProjectMembersView, AddProjectMemberView
 
+
+app_name = 'projects'
 urlpatterns = [
     path('', ProjectListView.as_view(), name='project_list'),
     path('create/', ProjectCreateView.as_view(), name='project_create'),

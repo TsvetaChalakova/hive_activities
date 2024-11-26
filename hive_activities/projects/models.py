@@ -61,7 +61,7 @@ class ProjectMembership(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='memberships')
     role = models.CharField(max_length=20, choices=ROLES)
     joined_at = models.DateTimeField(auto_now_add=True)
 

@@ -3,8 +3,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-
-from hive_activities.projects.forms import ProjectForm
+from hive_activities.projects.forms import ProjectForm, ProjectMembershipForm
 from hive_activities.projects.models import Project, ProjectMembership
 
 User = get_user_model()
@@ -16,8 +15,24 @@ class ProjectListView(LoginRequiredMixin, ListView):
     context_object_name = 'projects'
     paginate_by = 10
 
-    def get_queryset(self):
-        return Project.objects.filter(team_members=self.request.user)
+    # def get_queryset(self):
+    #     return Project.objects.filter(team_members=self.request.user)
+
+class ProjectCreateView(LoginRequiredMixin, CreateView):
+    model = Project
+    form_class = ProjectForm
+    template_name = 'projects/02_add_project_form.html'
+    success_url = reverse_lazy('projects:project_list')
+
+    def form_valid(self, form):
+        form.instance.manager = self.request.user
+        response = super().form_valid(form)
+        ProjectMembership.objects.create(
+            project=self.object,
+            user=self.request.user,
+            role='MANAGER'
+        )
+        return response
 
 
 class ProjectDetailView(LoginRequiredMixin, DetailView):
@@ -27,59 +42,71 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tasks'] = self.object.tasks.all()
-        context['team_members'] = self.object.team_members.all()
+        context['activities'] = self.object.activities.all()
+        context['memberships'] = self.object.team_members.all()
         return context
 
 
-class ProjectCreateView(LoginRequiredMixin, CreateView):
+class ProjectUpdateView(LoginRequiredMixin, UpdateView):
     model = Project
     form_class = ProjectForm
     template_name = 'projects/02_add_project_form.html'
-    success_url = reverse_lazy('project_list')
 
-    # def form_valid(self, form):
-    #     form.instance.owner = self.request.user
-    #     response = super().form_valid(form)
-    #     ProjectMembership.objects.create(
-    #         user=self.request.user,
-    #         project=self.object,
-    #         role='MANAGER'
-    #     )
-    #     return response
+    def get_success_url(self):
+        return reverse_lazy('projects:project_detail', kwargs={'pk': self.object.pk})
 
 
-class ProjectUpdateView(UpdateView):
+class ProjectDeleteView(LoginRequiredMixin, DeleteView):
     model = Project
-    form_class = ProjectForm
-    template_name = 'projects/02_add_project_form.html'
-    success_url = reverse_lazy('project_list')
+    template_name = 'projects/project_delete.html'
+    success_url = reverse_lazy('projects:project_list')
 
 
-class ProjectDeleteView(DeleteView):
-    model = Project
-    success_url = reverse_lazy('project_list')
-
-
-class ProjectMembersView(ListView):
-    model = ProjectMembership
+class ProjectMembersView(LoginRequiredMixin, ListView):
     template_name = 'projects/04_project_members.html'
     context_object_name = 'memberships'
 
     def get_queryset(self):
-        project = get_object_or_404(Project, pk=self.kwargs['pk'])
-        return ProjectMembership.objects.filter(project=project)
-
-
-class AddProjectMemberView(CreateView):
-    model = ProjectMembership
-    fields = ['user', 'role']
-    template_name = 'projects/05_add_project_member.html'
-    success_url = reverse_lazy('project_members')
+        self.project = get_object_or_404(Project, pk=self.kwargs['pk'])
+        return ProjectMembership.objects.filter(
+            project=self.project
+        ).select_related('user')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['project'] = get_object_or_404(Project, pk=self.kwargs['pk'])
+        context['project'] = self.project
+        context['is_manager'] = self.project.manager == self.request.user
         return context
 
 
+class AddProjectMemberView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = ProjectMembership
+    form_class = ProjectMembershipForm
+    template_name = 'projects/05_add_project_member.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.project = get_object_or_404(Project, pk=self.kwargs['pk'])
+        return super().dispatch(request, *args, **kwargs)
+
+    def test_func(self):
+        return self.project.manager == self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['project'] = self.project
+        return context
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        existing_members = self.project.team_members.all()
+        form.fields['user'].queryset = User.objects.exclude(
+            id__in=existing_members.values_list('id', flat=True)
+        )
+        return form
+
+    def form_valid(self, form):
+        form.instance.project = self.project
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('projects:project_members', kwargs={'pk': self.project.pk})
