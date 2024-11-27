@@ -76,7 +76,7 @@
                                 </td>
                                 <td>
                                     {% if activity.assigned_to %}
-                                        {{ activity.assigned_to.get_full_name }}
+                                        {{ activity.assigned_to }}
                                     {% else %}
                                         <span class="text-muted">Unassigned</span>
                                     {% endif %}

@@ -13,5 +13,5 @@ urlpatterns = [
     path('activity/<int:pk>/', ActivityDetailView.as_view(), name='activity_detail'),
     path('activity/<int:pk>/edit/', ActivityUpdateView.as_view(), name='activity_edit'),
     path('activity/<int:pk>/update-status/', ActivityStatusUpdate.as_view(), name='activity_status_update'),
-    path('<int:pk>/notes/', NoteCreateView.as_view(), name='add_note'),
+    path('activity/<int:pk>/notes/create/', NoteCreateView.as_view(), name='note_create'),
 ]

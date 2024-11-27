@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'hive_activities.notifications.apps.NotificationsConfig',
     'hive_activities.projects.apps.ProjectsConfig',
     'hive_activities.users.apps.UsersConfig',
-    'widget_tweaks',
     'django_celery_beat',
     'crispy_forms',
     'crispy_bootstrap5',

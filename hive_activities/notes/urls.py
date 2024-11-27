@@ -1,5 +1,4 @@
-from django.urls import path, URLPattern
+from django.urls import path
+from hive_activities.notes.views import NoteCreateView
 
-urlpatterns = [
-
-]
+app_name = 'notes'

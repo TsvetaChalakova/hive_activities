@@ -9,6 +9,7 @@ class UserProfile(models.Model):
         to=UserModel,
         on_delete=models.CASCADE,
         primary_key=True,
+        related_name='profile',
     )
 
     first_name = models.CharField(
@@ -33,5 +34,5 @@ class UserProfile(models.Model):
         verbose_name='updated at',
     )
 
-    def __str__(self):
+    def get_full_name(self):
         return f"{self.first_name} {self.last_name}"

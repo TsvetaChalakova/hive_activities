@@ -6,6 +6,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="mb-0">{{ activity.title }}</h3>
                 <div>
+                    <a href="{% url 'activities:note_create' activity.pk %}" class="btn btn-primary">New Note</a>
                     <a href="{% url 'activities:activity_edit' activity.pk %}" class="btn btn-primary">Edit</a>
                     <a href="{% url 'activities:team_dashboard' %}" class="btn btn-secondary">Back</a>
                 </div>
@@ -18,9 +19,12 @@
                         <p>{{ activity.description|default:"No description provided" }}</p>
 
                         <h5 class="mt-4">Notes</h5>
-                        {% if has_notes %}
+                        {% if notes %}
                             {% for note in notes %}
-                                {{ note.description }}
+                                <div class="mb-3">
+                                    <p><strong>{{ note.created_by.profile.get_full_name }}</strong> ({{ note.created_at|date:'SHORT_DATETIME_FORMAT' }}):</p>
+                                    <p>{{ note.content }}</p>
+                                </div>
                             {% endfor %}
                         {% else %}
                             <div class="alert alert-info">

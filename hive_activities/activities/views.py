@@ -1,7 +1,7 @@
 import csv
 from io import BytesIO
+
 import xlsxwriter
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
@@ -12,8 +12,7 @@ from django.contrib import messages
 from .forms import IndividualActivityForm, LoggedInUserActivityForm
 from .models import Activity
 from ..core.helpers import export_to_csv, export_to_excel
-from ..notes.forms import NoteForm
-from ..notifications.models import Notification
+from ..notes.models import Note
 from ..projects.models import Project
 
 
@@ -61,8 +60,7 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = Activity.objects.filter(
             Q(assigned_to=self.request.user) |
-            Q(project__team_members=self.request.user),
-            project__isnull=True
+            Q(project__team_members=self.request.user)
         ).select_related(
             'project',
             'assigned_to'
@@ -183,6 +181,11 @@ class ActivityCreateView(CreateView):
 class ActivityDetailView(LoginRequiredMixin, DetailView):
     model = Activity
     template_name = 'activities/02_activity_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['notes'] = Note.objects.filter(activity=self.object).order_by('-created_at')
+        return context
 
 
 class ActivityUpdateView(LoginRequiredMixin, UpdateView):
