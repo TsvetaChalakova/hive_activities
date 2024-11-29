@@ -4,3 +4,7 @@ from django.apps import AppConfig
 class ActivitiesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'hive_activities.activities'
+
+    def ready(self):
+        import hive_activities.activities.signals
+

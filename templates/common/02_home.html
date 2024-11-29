@@ -1,36 +1,49 @@
 {% extends 'common/01_base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 text-center">
-            <h1 class="mb-4">Welcome to Hive Activities</h1>
-            <p class="lead mb-5">Choose how you'd like to use our app:</p>
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Individual Use</h5>
-                            <p class="card-text">Create and manage your personal tasks without signing up.</p>
-                            <a href="{% url 'activities:individual_dashboard' %}" 
-                               class="btn btn-primary">Start Now</a>
-                        </div>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h1 class="mb-4">Welcome to Hive Activities</h1>
+                <p class="text-center">
+                    <i>Our most precious commodity is time...</i> and at Hive Activities, we help you manage it more effectively. Choose how you would like to use our app, whether for individual task management or collaborating with your team on exciting projects.
+                </p>
+                <p class="lead mb-5">Make your choice:</p>
+
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+
+                    <div class="col">
+                        <a href="{% url 'activities:individual_dashboard' %}" class="text-decoration-none">
+                            <div class="card h-100 text-center shadow-sm">
+                                <h5 class="card-title text-dark">Individual Use</h5>
+                                <img src="{% static 'images/individual.webp' %}" class="card-img-top" alt="Individual Use">
+                                <div class="card-body">
+                                    
+                                    <p class="card-text text-muted">
+                                        Manage your personal tasks and activities with ease.
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
                     </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Team Collaboration</h5>
-                            <p class="card-text">Work together with your team on shared projects.</p>
-                            <a href="{% url 'users:login' %}" 
-                               class="btn btn-success">Login</a>
-                        </div>
+
+                    <div class="col">
+                        <a href="{% url 'activities:team_dashboard' %}" class="text-decoration-none">
+                            <div class="card h-100 text-center shadow-sm">
+                                <h5 class="card-title text-dark">Team Collaboration</h5>
+                                <img src="{% static 'images/team.webp' %}" class="card-img-top" alt="Team Collaboration">
+                                <div class="card-body">
+                                    
+                                    <p class="card-text text-muted">
+                                        Work with your team to collaborate on projects and tasks.
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

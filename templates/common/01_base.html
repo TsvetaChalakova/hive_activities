@@ -31,7 +31,7 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
@@ -49,7 +49,7 @@
                         </li>
                     {% endif %}
                 </ul>
-                
+
                 <div class="navbar-nav">
                     {% if user.is_authenticated %}
                         <div class="nav-item dropdown">
@@ -69,20 +69,19 @@
             </div>
         </div>
     </nav>
-    
+
     <main class="container py-4">
         {% block content %}
         {% endblock %}
     </main>
-    
+
     <footer class="mt-auto py-3 bg-dark text-light">
         <div class="container text-center">
             <small>&copy; {% now "Y" %} Hive Activities</small>
         </div>
     </footer>
-    
+
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
-

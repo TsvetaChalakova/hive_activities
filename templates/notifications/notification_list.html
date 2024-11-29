@@ -1,0 +1,18 @@
+{% extends 'common/01_base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Your Notifications</h2>
+    <div class="notification-list">
+        {% for notification in notifications %}
+            <div class="notification {% if not notification.is_read %}unread{% endif %}">
+                <h3>{{ notification.title }}</h3>
+                <p>{{ notification.message }}</p>
+                <small>{{ notification.created_at|timesince }} ago</small>
+            </div>
+        {% empty %}
+            <p>No notifications yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

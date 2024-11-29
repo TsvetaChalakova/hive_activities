@@ -1,7 +1,8 @@
 from django.urls import path
-from hive_activities.notifications import views
+from . import views
+
+app_name = 'notifications'
 
 urlpatterns = [
-    path('', views.NotificationListView.as_view(), name='notifications'),
-    path('mark-read/<int:pk>/', views.MarkNotificationReadView.as_view(), name='mark_notification_read'),
+    path('', views.NotificationListView.as_view(), name='list'),
 ]
