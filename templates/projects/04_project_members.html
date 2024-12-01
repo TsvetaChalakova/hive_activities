@@ -30,7 +30,7 @@
                     <tbody>
                         {% for membership in memberships %}
                             <tr>
-                                <td>{{ membership.user.get_full_name }}</td>
+                                <td>{{ membership.user.profile.get_full_name }}</td>
                                 <td>{{ membership.user.email }}</td>
                                 <td>
                                     <span class="badge {% if membership.role == 'MANAGER' %}bg-primary{% else %}bg-secondary{% endif %}">
@@ -46,7 +46,7 @@
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#removeMemberModal"
                                                     data-member-id="{{ membership.id }}"
-                                                    data-member-name="{{ membership.user.get_full_name }}">
+                                                    data-member-name="{{ membership.user.profile.get_full_name }}">
                                                 Remove
                                             </button>
                                         {% endif %}

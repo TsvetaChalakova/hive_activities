@@ -7,11 +7,11 @@ from hive_activities.users.models import UserProfile, AppUser
 UserModel = get_user_model()
 
 
-class HiveAuthenticationForm(AuthenticationForm):
+class HiveActivitiesAuthenticationForm(AuthenticationForm):
     username = forms.EmailField(
         widget=forms.EmailInput(attrs={
             'placeholder': 'Enter your email',
-            'autocomplete': 'email',
+            'autocomplete': 'off',
             'class': 'form-control',
             'aria-label': 'Email address',
         }),
@@ -20,7 +20,7 @@ class HiveAuthenticationForm(AuthenticationForm):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'placeholder': 'Enter your password',
-            'autocomplete': 'current-password',
+            'autocomplete': 'off',
             'class': 'form-control',
             'aria-label': 'Password',
         })
@@ -67,20 +67,20 @@ class ProfileEditForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         exclude = ('user', )
-        fields = ['first_name', 'last_name']
+        fields = ['first_name', 'last_name', 'telephone']
         widgets = {
             'first_name': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Enter your first name',
+                'placeholder': 'Enter your given name.',
             }),
             'last_name': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Enter your last name',
+                'placeholder': 'Enter your surname.',
             }),
-        }
-        help_texts = {
-            'first_name': 'Enter your given name.',
-            'last_name': 'Enter your surname.',
+            'telephone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your contact number.',
+            }),
         }
 
 

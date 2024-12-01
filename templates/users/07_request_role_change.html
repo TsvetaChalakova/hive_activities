@@ -1,0 +1,19 @@
+{% extends "common/01_base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Request Role Change</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="requested_role">Requested Role</label>
+            <select id="requested_role" name="requested_role" class="form-control">
+                {% for value, label in form.fields.requested_role.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Submit Request</button>
+    </form>
+</div>
+{% endblock %}

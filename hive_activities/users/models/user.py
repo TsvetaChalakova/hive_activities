@@ -10,6 +10,8 @@ class UserType(TextChoices):
     TEAM_MEMBER = 'TEAM_MEMBER', 'Team Member'
     PROJECT_MANAGER = 'PROJECT_MANAGER', 'Project Manager'
     VIEWER = 'VIEWER', 'Viewer'
+    STAFF_ADMIN = 'STAFF_ADMIN', 'Staff Admin'
+    SUPER_ADMIN = 'SUPER_ADMIN', 'Super Admin'
 
 
 class AppUser(AbstractBaseUser, PermissionsMixin):
@@ -52,12 +54,28 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
         related_query_name='appuser'
     )
 
-    objects = AppUserManager()
-
     def __str__(self):
         return self.email or "Anonymous User"
+
+    def is_team_member(self):
+        return self.user_type == UserType.TEAM_MEMBER
+
+    def is_project_manager(self):
+        return self.user_type == UserType.PROJECT_MANAGER
+
+    def is_staff_admin(self):
+        return self.is_staff and not self.is_superuser
+
+    def is_super_admin(self):
+        return self.is_superuser
 
     class Meta:
         verbose_name = 'user'
         verbose_name_plural = 'users'
-        ordering = ['email']
+        ordering = ['pk']
+
+    objects = AppUserManager()
+
+
+
+

@@ -2,6 +2,9 @@ from decouple import config, Csv
 from datetime import timedelta
 from pathlib import Path
 
+from django.urls import reverse_lazy
+from rest_framework.reverse import reverse_lazy
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -32,6 +35,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'crispy_forms',
     'crispy_bootstrap5',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -58,7 +62,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'hive_activities.core.context_processors.current_year',
             ],
         },
     },
@@ -127,8 +130,8 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = 'activity_list'
-LOGOUT_REDIRECT_URL = 'landing'
+LOGIN_REDIRECT_URL = reverse_lazy('activities:team_dashboard')
+LOGOUT_REDIRECT_URL = reverse_lazy('activities:home')
 AUTH_USER_MODEL = 'users.AppUser'
 
 CELERY_BROKER_URL = config('CELERY_BROKER_URL')

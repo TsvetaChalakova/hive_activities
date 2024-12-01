@@ -63,7 +63,7 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
         ).select_related(
             'project',
             'assigned_to'
-        ).order_by('-created_at')
+        ).order_by('-created_at').distinct()
 
         project_id = self.request.GET.get('project')
         if project_id:

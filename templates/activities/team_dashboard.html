@@ -15,7 +15,7 @@
                     {% for project in projects %}
                         <a href="{% url 'activities:team_dashboard' %}?project={{ project.id }}"
                            class="list-group-item list-group-item-action {% if selected_project|stringformat:'s' == project.id|stringformat:'s' %}active{% endif %}">
-                            {{ project.title }}
+                            {{ project.title|truncatechars:20 }}
                         </a>
                     {% empty %}
                         <p class="text-muted">No projects yet</p>
@@ -64,28 +64,18 @@
                         {% for activity in activities %}
                             <tr>
                                 <td>{{ activity.title }}</td>
+                                <td>{{ activity.project.title }}</td>
                                 <td>
-                                    <span class="badge bg-secondary">
-                                        {{ activity.project.title }}
-                                    </span>
+                        <span class="badge bg-{{ activity.status|lower }}">
+                            {{ activity.get_status_display }}
+                        </span>
                                 </td>
-                                <td>
-                                    <span class="badge bg-{{ activity.status|lower }}">
-                                        {{ activity.get_status_display }}
-                                    </span>
-                                </td>
-                                <td>
-                                    {% if activity.assigned_to %}
-                                        {{ activity.assigned_to }}
-                                    {% else %}
-                                        <span class="text-muted">Unassigned</span>
-                                    {% endif %}
-                                </td>
+                                <td>{{ activity.assigned_to.profile.get_full_name|default:"Unassigned" }}</td>
                                 <td>
                                     {% if activity.due_date %}
                                         <span class="{% if activity.is_overdue %}text-danger{% endif %}">
-                                            {{ activity.due_date }}
-                                        </span>
+                                {{ activity.due_date }}
+                            </span>
                                     {% else %}
                                         <span class="text-muted">No due date</span>
                                     {% endif %}
@@ -124,9 +114,7 @@
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="6" class="text-center py-4">
-                                    <p class="text-muted mb-0">No activities found</p>
-                                </td>
+                                <td colspan="6" class="text-center">No activities found</td>
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -259,10 +247,10 @@
             </div>
             <div class="modal-body">
                 <label for="statusSelect"></label><select class="form-select" id="statusSelect">
-                    <option value="TODO">To Do</option>
-                    <option value="IN_PROGRESS">In Progress</option>
-                    <option value="COMPLETED">Completed</option>
-                </select>
+                <option value="TODO">To Do</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="COMPLETED">Completed</option>
+            </select>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
@@ -29,7 +30,7 @@
                     </div>
 
                     <div class="col">
-                        <a href="{% url 'activities:team_dashboard' %}" class="text-decoration-none">
+                        <a href="{% url 'users:signup' %}" class="text-decoration-none">
                             <div class="card h-100 text-center shadow-sm">
                                 <h5 class="card-title text-dark">Team Collaboration</h5>
                                 <img src="{% static 'images/team.webp' %}" class="card-img-top" alt="Team Collaboration">

@@ -1,0 +1,64 @@
+{% extends 'common/01_base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Role Request Management</h2>
+    
+    {% if role_requests %}
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <button type="submit" name="action" value="approve" class="btn btn-success">
+                Approve Selected
+            </button>
+            <button type="submit" name="action" value="reject" class="btn btn-danger">
+                Reject Selected
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="select-all" class="form-check-input">
+                        </th>
+                        <th>User</th>
+                        <th>Current Role</th>
+                        <th>Requested Role</th>
+                        <th>Request Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in role_requests %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="selected_requests" value="{{ request.id }}" 
+                                   class="form-check-input request-checkbox">
+                        </td>
+                        <td>{{ request.user.email }}</td>
+                        <td>Team Member</td>
+                        <td>{{ request.requested_role }}</td>
+                        <td>{{ request.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+    {% else %}
+    <div class="alert alert-info">
+        No pending role requests at this time.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('select-all').addEventListener('change', function() {
+    const checkboxes = document.getElementsByClassName('request-checkbox');
+    for (let checkbox of checkboxes) {
+        checkbox.checked = this.checked;
+    }
+});
+</script>
+{% endblock %}

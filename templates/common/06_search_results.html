@@ -69,7 +69,7 @@
                             <small>{{ comment.created_at|timesince }} ago</small>
                         </div>
                         <p class="mb-1">{{ comment.content|truncatechars:150 }}</p>
-                        <small>By: {{ comment.author.get_full_name }}</small>
+                        <small>By: {{ note.author.profile.get_full_name }}</small>
                     </a>
                 {% endfor %}
             </div>

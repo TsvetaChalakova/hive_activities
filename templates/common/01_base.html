@@ -11,77 +11,90 @@
 
 <body class="d-flex flex-column min-vh-100">
 
-    {% if messages %}
-        <div class="container mt-3">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+{% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'activities:home' %}">
-                🐝 Hive Activities
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'activities:home' %}">
+            🐝 Hive Activities
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'activities:individual_dashboard' %}">Individual Dashboard</a>
+                </li>
+                {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'activities:individual_dashboard' %}">Individual</a>
+                        <a class="nav-link" href="{% url 'activities:team_dashboard' %}">Team Dashboard</a>
                     </li>
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'activities:team_dashboard' %}">Team</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'activities:team_dashboard' %}">Projects</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'activities:team_dashboard' %}">Notifications</a>
-                        </li>
-                    {% endif %}
-                </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'projects:project_list' %}">Projects</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'notifications:list' %}">Notifications</a>
+                    </li>
 
-                <div class="navbar-nav">
-                    {% if user.is_authenticated %}
-                        <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle"></i> {{ user.email }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{% url 'users:profile-detail' user.pk %}">Profile</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'users:logout' %}">Logout</a></li>
-                            </ul>
-                        </div>
-                    {% else %}
-                        <a class="nav-link" href="{% url 'users:signup' %}">Sign Up</a>
-                    {% endif %}
-                </div>
+                {% endif %}
+            </ul>
+
+            <div class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> {{ user.profile.get_full_name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'users:profile-detail' user.pk %}">Profile</a></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'users:role_change' %}">Request Role Change</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'users:pending_role_requests' %}">Pending Role Changes</a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                            <form method="post" action="{% url 'users:logout' %}">
+                                {% csrf_token %}
+                                <button  class="dropdown-item">Logout</button>
+                            </form>
+                            </li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <a class="nav-link" href="{% url 'users:login' %}">Login</a>
+                {% endif %}
+
             </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <main class="container py-4">
-        {% block content %}
-        {% endblock %}
-    </main>
+<main class="container py-4">
+    {% block content %}
+    {% endblock %}
+</main>
 
-    <footer class="mt-auto py-3 bg-dark text-light">
-        <div class="container text-center">
-            <small>&copy; {% now "Y" %} Hive Activities</small>
-        </div>
-    </footer>
+<footer class="mt-auto py-3 bg-dark text-light">
+    <div class="container text-center">
+        <small>&copy; {% now "Y" %} Hive Activities</small>
+    </div>
+</footer>
 
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-    {% block extra_js %}{% endblock %}
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -24,6 +24,12 @@ class UserProfile(models.Model):
         null=False,
     )
 
+    telephone = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True,
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='created at',

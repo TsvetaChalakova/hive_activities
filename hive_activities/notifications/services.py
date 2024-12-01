@@ -10,7 +10,7 @@ class NotificationService:
 
         activity_title = note.activity.title
         project_name = note.activity.project.name
-        author_name = note.author.get_full_name()
+        author_name = note.author.profile.get_full_name()
 
         for member in team_members:
             if member == note.author:

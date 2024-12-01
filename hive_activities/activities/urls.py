@@ -7,8 +7,8 @@ from hive_activities.notes.views import NoteCreateView
 app_name = 'activities'
 urlpatterns = [
     path('', views.home, name='home'),
-    path('individual/', individual_view, name='individual_dashboard'),
-    path('team/', TeamDashboardView.as_view(), name='team_dashboard'),
+    path('individual_dashboard/', individual_view, name='individual_dashboard'),
+    path('team_dashboard/', TeamDashboardView.as_view(), name='team_dashboard'),
     path('activity/create/', views.ActivityCreateView.as_view(), name='activity_create'),
     path('activity/<int:pk>/', ActivityDetailView.as_view(), name='activity_detail'),
     path('activity/<int:pk>/edit/', ActivityUpdateView.as_view(), name='activity_edit'),
