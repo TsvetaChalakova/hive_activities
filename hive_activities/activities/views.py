@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib import messages
 from .forms import IndividualActivityForm, LoggedInUserActivityForm
 from .models import Activity
@@ -14,6 +14,54 @@ from ..projects.models import Project
 
 def home(request):
     return render(request, 'common/02_home.html')
+
+
+class SearchResultsView(TemplateView):
+    template_name = 'common/03_search_results.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        query = self.request.GET.get('q', '')
+
+        if query:
+            if self.request.user.is_authenticated:
+
+                projects = Project.objects.filter(
+                    Q(title__icontains=query) |
+                    Q(description__icontains=query),
+                    Q(team_members=self.request.user) |
+                    Q(manager=self.request.user)
+                ).distinct()[:10]
+
+                activities = Activity.objects.filter(
+                    Q(title__icontains=query) |
+                    Q(description__icontains=query),
+                    Q(assigned_to=self.request.user) |
+                    Q(project__team_members=self.request.user) |
+                    Q(project__manager=self.request.user)
+                ).distinct()[:10]
+            else:
+
+                session_activities = self.request.session.get('viewed_activities', [])
+                projects = Project.objects.none()
+
+                if session_activities:
+                    activities = Activity.objects.filter(
+                        Q(title__icontains=query) |
+                        Q(description__icontains=query),
+                        id__in=session_activities
+                    ).distinct()[:10]
+                else:
+                    activities = Activity.objects.none()
+
+            context.update({
+                'projects': projects,
+                'activities': activities,
+                'query': query,
+                'has_results': projects.exists() or activities.exists()
+            })
+
+        return context
 
 
 def individual_view(request):
@@ -140,6 +188,7 @@ class ActivityCreateView(CreateView):
         return super().form_invalid(form)
 
 
+# Keep your current authenticated view
 class ActivityDetailView(LoginRequiredMixin, DetailView):
     model = Activity
     template_name = 'activities/02_activity_detail.html'

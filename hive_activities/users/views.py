@@ -1,8 +1,10 @@
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import Group
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, \
+    PasswordResetCompleteView, PasswordChangeView
 from django.contrib import messages
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from django.urls import reverse_lazy
@@ -20,6 +22,14 @@ class HiveLoginView(LoginView):
     success_url = reverse_lazy('activities:team_dashboard')
 
     def form_valid(self, form):
+        user = form.get_user()
+        if not user.is_active:
+            messages.error(
+                self.request,
+                "This account has been deactivated. Please contact support if you wish to reactivate it."
+            )
+            return self.form_invalid(form)
+
         if not form.cleaned_data.get('remember_me', False):
             self.request.session.set_expiry(0)
         return super().form_valid(form)
@@ -50,6 +60,7 @@ class SignUpView(CreateView):
 
 def home_after_logout(request):
     return render(request, 'users/02_logout.html')
+
 
 class ProfileDetailView(LoginRequiredMixin, DetailView):
     model = UserProfile
@@ -100,6 +111,16 @@ class ProfileDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         profile = get_object_or_404(UserProfile, pk=self.kwargs['pk'])
         return self.request.user == profile.user
 
+    def form_valid(self, form):
+        user = self.get_object().user
+        user.is_active = False
+        user.save()
+        messages.success(self.request, "Your account has been successfully deactivated.")
+
+        logout(self.request)
+
+        return HttpResponseRedirect(self.success_url)
+
 
 class RoleRequestView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = RoleRequest
@@ -107,10 +128,10 @@ class RoleRequestView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     template_name = 'users/07_request_role_change.html'
 
     def test_func(self):
-        return self.request.user.is_team_member()
+        return self.request.user.is_team_member() or self.request.user.is_viewer()
 
     def handle_no_permission(self):
-        messages.error(self.request, "Only team members can request role changes.")
+        messages.error(self.request, "Only team members and viewers can request role changes.")
         return redirect('activities:team_dashboard')
 
     def form_valid(self, form):
@@ -165,3 +186,33 @@ class RoleRequestManagementView(LoginRequiredMixin, UserPassesTestMixin, ListVie
     def get_queryset(self):
         return RoleRequest.objects.filter(approved__isnull=True).select_related('user')
 
+
+class HivePasswordResetView(PasswordResetView):
+    template_name = 'users/password/password_reset_form.html'
+    email_template_name = 'users/password/password_reset_email.html'
+    success_url = reverse_lazy('users:password_reset_done')
+
+
+class HivePasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'users/password/password_reset_done.html'
+
+
+class HivePasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'users/password/password_reset_confirm.html'
+    success_url = reverse_lazy('users:password_reset_complete')
+
+
+class HivePasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = 'users/password/password_reset_complete.html'
+
+
+class HivePasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+    template_name = 'users/password/password_change.html'
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Your password has been successfully updated!")
+        return response
+
+    def get_success_url(self):
+        return reverse_lazy('users:profile-detail', kwargs={'pk': self.request.user.profile.pk})

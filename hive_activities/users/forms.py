@@ -33,6 +33,18 @@ class HiveActivitiesAuthenticationForm(AuthenticationForm):
 
 
 class AppUserCreationForm(UserCreationForm):
+    first_name = forms.CharField(
+        required=True,
+        widget=forms.TextInput(attrs={"placeholder": "Enter your first name", "class": "form-control"})
+    )
+    last_name = forms.CharField(
+        required=True,
+        widget=forms.TextInput(attrs={"placeholder": "Enter your last name", "class": "form-control"})
+    )
+    telephone = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"placeholder": "Enter your telephone number", "class": "form-control"})
+    )
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(attrs={"placeholder": "Enter your email", "class": "form-control"})
@@ -46,8 +58,8 @@ class AppUserCreationForm(UserCreationForm):
 
     class Meta:
         model = AppUser
-        fields = ["email", "password1", "password2"]
-        field_order = ["email", "password1", "password2"]
+        fields = ["first_name", "last_name", "telephone", "email", "password1", "password2"]
+        field_order = ["first_name", "last_name", "telephone", "email", "password1", "password2"]
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -56,10 +68,15 @@ class AppUserCreationForm(UserCreationForm):
         return email
 
     def save(self, commit=True):
-        user = super().save(commit=commit)
+        user = super().save(commit=False)
         if commit:
-            from .models import UserProfile
-            UserProfile.objects.create(user=user)
+            user.save()
+            UserProfile.objects.create(
+                user=user,
+                first_name=self.cleaned_data['first_name'],
+                last_name=self.cleaned_data['last_name'],
+                telephone=self.cleaned_data['telephone']
+            )
         return user
 
 
@@ -83,7 +100,3 @@ class ProfileEditForm(forms.ModelForm):
             }),
         }
 
-
-class AppUserChangeForm(UserChangeForm):
-    class Meta(UserChangeForm.Meta):
-        model = UserModel

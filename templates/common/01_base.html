@@ -11,16 +11,16 @@
 
 <body class="d-flex flex-column min-vh-100">
 
-{% if messages %}
-    <div class="container mt-3">
+<div class="messages-container" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1050; width: 90%; max-width: 800px;">
+    {% if messages %}
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         {% endfor %}
-    </div>
-{% endif %}
+    {% endif %}
+</div>
 
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -50,6 +50,25 @@
 
                 {% endif %}
             </ul>
+            {% if user.is_authenticated %}
+                <form class="d-flex" action="{% url 'activities:search' %}" method="GET">
+                    <div class="input-group">
+                        <input
+                                class="form-control"
+                                type="search"
+                                placeholder="Search activities, projects..."
+                                name="q"
+                                aria-label="Search"
+                                value="{{ request.GET.q }}"
+                        >
+                        <button class="btn btn-outline-light" type="submit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            {% endif %}
 
             <div class="navbar-nav">
                 {% if user.is_authenticated %}
@@ -67,10 +86,10 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                            <form method="post" action="{% url 'users:logout' %}">
-                                {% csrf_token %}
-                                <button  class="dropdown-item">Logout</button>
-                            </form>
+                                <form method="post" action="{% url 'users:logout' %}">
+                                    {% csrf_token %}
+                                    <button  class="dropdown-item">Logout</button>
+                                </form>
                             </li>
                         </ul>
                     </div>

@@ -1,8 +1,7 @@
-from django.contrib import auth
 from django.db import models
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser
-from hive_activities.users.managers import AppUserManager
+from hive_activities.users.management.managers import AppUserManager
 from django.db.models import TextChoices
 
 
@@ -59,6 +58,9 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
 
     def is_team_member(self):
         return self.user_type == UserType.TEAM_MEMBER
+
+    def is_viewer(self):
+        return self.user_type == UserType.VIEWER
 
     def is_project_manager(self):
         return self.user_type == UserType.PROJECT_MANAGER

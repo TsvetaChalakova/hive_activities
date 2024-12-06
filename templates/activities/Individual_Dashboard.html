@@ -3,46 +3,59 @@
 
 {% block content %}
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Add New Activity</h5>
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <button type="submit" class="btn btn-primary">Add Activity</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-8">
-            <div class="mb-3">
-                <a href="?export=csv" class="btn btn-info">Export to CSV</a>
-                <a href="?export=excel" class="btn btn-success">Export to Excel</a>
-            </div>
-            <h2>Your Activities</h2>
-            {% for activity in activities %}
-                <div class="card mb-3">
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">{{ activity.title }}</h5>
-                        <p class="card-text">{{ activity.description }}</p>
-                        <p class="card-text">
-                            <small class="text-muted">
-                                Priority: {{ activity.get_priority_display }}
-                                {% if activity.due_date %}
-                                    | Due: {{ activity.due_date }}
-                                {% endif %}
-                            </small>
-                        </p>
+                        <h5 class="card-title">Add New Activity</h5>
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <button type="submit" class="btn btn-primary">Add Activity</button>
+                        </form>
                     </div>
                 </div>
-            {% empty %}
-                <p>No activities yet. Create your first one!</p>
-            {% endfor %}
+            </div>
+
+            <div class="col-md-8">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                        Export
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="?{% if selected_project %}project={{ selected_project }}&{% endif %}export=csv">
+                                Export to CSV
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="?{% if selected_project %}project={{ selected_project }}&{% endif %}export=excel">
+                                Export to Excel
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <h2>Your Activities</h2>
+                {% for activity in activities %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ activity.title }}</h5>
+                            <p class="card-text">{{ activity.description }}</p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Priority: {{ activity.get_priority_display }}
+                                    {% if activity.due_date %}
+                                        | Due: {{ activity.due_date }}
+                                    {% endif %}
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No activities yet. Create your first one!</p>
+                {% endfor %}
+            </div>
         </div>
     </div>
-</div>
 {% endblock %}
