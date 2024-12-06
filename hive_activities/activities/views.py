@@ -1,16 +1,13 @@
-import csv
-from io import BytesIO
-import xlsxwriter
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
 from .forms import IndividualActivityForm, LoggedInUserActivityForm
 from .models import Activity
-from ..core.helpers import export_to_csv, export_to_excel
+from ..core.helpers import export_data
 from ..notes.models import Note
 from ..projects.models import Project
 
@@ -40,10 +37,21 @@ def individual_view(request):
         form = IndividualActivityForm()
 
     export_format = request.GET.get('export')
+
+    headers = ['Title', 'Description', 'Due Date', 'Priority', 'Status', 'Created At']
+    row_data = lambda activity: [
+        activity.title,
+        activity.description,
+        activity.due_date.strftime('%Y-%m-%d') if activity.due_date else 'No due date',
+        activity.priority,
+        activity.status,
+        activity.created_at.strftime('%Y-%m-%d %H:%M:%S') if activity.created_at else '',
+    ]
+
     if export_format == 'csv':
-        return export_to_csv(activities)
+        return export_data(activities, headers, row_data, file_type='csv')
     elif export_format == 'excel':
-        return export_to_excel(activities)
+        return export_data(activities, headers, row_data, file_type='excel')
 
     return render(request, 'activities/individual_dashboard.html', {
         'activities': activities,
@@ -80,66 +88,21 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
         context['form'] = LoggedInUserActivityForm()
         return context
 
-    def export_to_csv(self, queryset):
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="activities.csv"'
-
-        writer = csv.writer(response)
-
-        writer.writerow(['Title', 'Project', 'Status', 'Assigned To', 'Due Date'])
-
-        for activity in queryset:
-            writer.writerow([
-                activity.title,
-                activity.project.title if activity.project else '',
-                activity.get_status_display(),
-                activity.assigned_to.email if activity.assigned_to else 'Unassigned',
-                activity.due_date or 'No due date'
-            ])
-
-        return response
-
-    def export_to_excel(self, queryset):
-        output = BytesIO()
-        workbook = xlsxwriter.Workbook(output)
-        worksheet = workbook.add_worksheet()
-
-        header_format = workbook.add_format({
-            'bold': True,
-            'bg_color': '#F0F0F0'
-        })
-
-        headers = ['Title', 'Project', 'Status', 'Assigned To', 'Due Date']
-        for col, header in enumerate(headers):
-            worksheet.write(0, col, header, header_format)
-
-        for row, activity in enumerate(queryset, start=1):
-            worksheet.write(row, 0, activity.title)
-            worksheet.write(row, 1, activity.project.title if activity.project else '')
-            worksheet.write(row, 2, activity.get_status_display())
-            worksheet.write(row, 3, activity.assigned_to.email if activity.assigned_to else 'Unassigned')
-            worksheet.write(row, 4, activity.due_date.strftime('%Y-%m-%d') if activity.due_date else 'No due date')
-
-        workbook.close()
-
-        response = HttpResponse(
-            output.getvalue(),
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = 'attachment; filename="activities.xlsx"'
-
-        return response
-
     def get(self, request, *args, **kwargs):
         export_format = request.GET.get('export')
 
         if export_format:
             queryset = self.get_queryset()
 
-            if export_format == 'csv':
-                return self.export_to_csv(queryset)
-            elif export_format == 'excel':
-                return self.export_to_excel(queryset)
+            headers = ['Title', 'Project', 'Status', 'Assigned To', 'Due Date']
+            row_data = lambda activity: [
+                activity.title,
+                activity.project.title if activity.project else '',
+                activity.get_status_display(),
+                activity.assigned_to.profile.get_full_name() if activity.assigned_to else 'Unassigned',
+                activity.due_date.strftime('%Y-%m-%d') if activity.due_date else 'No due date',
+            ]
+            return export_data(queryset, headers, row_data, file_type=export_format)
 
         return super().get(request, *args, **kwargs)
 

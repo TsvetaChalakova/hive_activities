@@ -27,7 +27,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hive_activities.activities.apps.ActivitiesConfig',
-    'hive_activities.api.apps.ApiConfig',
     'hive_activities.notes.apps.NotesConfig',
     'hive_activities.notifications.apps.NotificationsConfig',
     'hive_activities.projects.apps.ProjectsConfig',
