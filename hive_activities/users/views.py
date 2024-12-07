@@ -45,6 +45,11 @@ class SignUpView(CreateView):
     template_name = 'users/03_signup.html'
     success_url = reverse_lazy('activities:team_dashboard')
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('activities:team_dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         response = super().form_valid(form)
         login(self.request, self.object)

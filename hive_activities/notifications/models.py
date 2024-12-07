@@ -12,5 +12,8 @@ class Notification(models.Model):
         on_delete=models.CASCADE
     )
     note = models.ForeignKey(Note, on_delete=models.CASCADE)
-    read = models.BooleanField(default=False)
+    message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Notification for {self.recipient} on {self.note}'

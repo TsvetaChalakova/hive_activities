@@ -1,23 +1,26 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_http_methods
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, TemplateView
 from django.contrib import messages
-from .forms import IndividualActivityForm, LoggedInUserActivityForm
-from .models import Activity
-from ..core.helpers import export_data
-from ..notes.models import Note
-from ..projects.models import Project
+from hive_activities.activities.forms import IndividualActivityForm, LoggedInUserActivityForm
+from hive_activities.activities.models import Activity
+from hive_activities.core.helpers import export_data
+from hive_activities.notes.models import Note
+from hive_activities.projects.models import Project
 
 
 def home(request):
-    return render(request, 'common/02_home.html')
+    return render(request, 'common/../../templates/activities/01_home.html')
 
 
 class SearchResultsView(TemplateView):
-    template_name = 'common/03_search_results.html'
+    template_name = 'common/../../templates/activities/03_search_results.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -71,7 +74,11 @@ def individual_view(request):
     activities = Activity.objects.filter(
         session_key=request.session.session_key,
         project__isnull=True
-    ).order_by('-created_at')
+    ).order_by('due_date')
+
+    paginator = Paginator(activities, 4)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     if request.method == 'POST':
         form = IndividualActivityForm(request.POST)
@@ -91,8 +98,8 @@ def individual_view(request):
         activity.title,
         activity.description,
         activity.due_date.strftime('%Y-%m-%d') if activity.due_date else 'No due date',
-        activity.priority,
-        activity.status,
+        activity.get_priority_display(),
+        activity.get_status_display(),
         activity.created_at.strftime('%Y-%m-%d %H:%M:%S') if activity.created_at else '',
     ]
 
@@ -101,15 +108,51 @@ def individual_view(request):
     elif export_format == 'excel':
         return export_data(activities, headers, row_data, file_type='excel')
 
-    return render(request, 'activities/individual_dashboard.html', {
-        'activities': activities,
+    return render(request, 'activities/02_Individual_dashboard.html', {
+        'activities': page_obj,
         'form': form,
     })
 
 
+@require_http_methods(["POST"])
+@csrf_protect
+def update_activity_status(request, pk):
+    try:
+        activity = Activity.objects.get(id=pk, session_key=request.session.session_key)
+
+        if activity.status == 'TO_DO':
+            new_status = 'IN_PROGRESS'
+        elif activity.status == 'IN_PROGRESS':
+            new_status = 'COMPLETED'
+        else:
+            new_status = 'TO_DO'
+
+        Activity.objects.filter(id=pk).update(status=new_status)
+
+        updated_activity = Activity.objects.get(id=pk)
+
+        return JsonResponse({
+            'success': True,
+            'new_status': new_status,
+            'display_status': updated_activity.get_status_display()
+        })
+
+    except Activity.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Activity not found'
+        }, status=404)
+    except Exception as e:
+        print(f"Error updating activity status: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
 class TeamDashboardView(LoginRequiredMixin, ListView):
     model = Activity
-    template_name = 'activities/team_dashboard.html'
+    template_name = 'activities/04_team_dashboard.html'
     context_object_name = 'activities'
 
     def get_queryset(self):
@@ -119,7 +162,7 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
         ).select_related(
             'project',
             'assigned_to'
-        ).order_by('-created_at').distinct()
+        ).order_by('created_at').distinct()
 
         project_id = self.request.GET.get('project')
         if project_id:
@@ -158,7 +201,7 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
 class ActivityCreateView(CreateView):
     model = Activity
     form_class = IndividualActivityForm
-    template_name = 'activities/activity_form_modal.html'
+    template_name = 'activities/05_modal_create_activity.html'
     success_message = "Activity was created successfully!"
     success_url = reverse_lazy('activities:team_dashboard')
 
@@ -191,27 +234,26 @@ class ActivityCreateView(CreateView):
 # Keep your current authenticated view
 class ActivityDetailView(LoginRequiredMixin, DetailView):
     model = Activity
-    template_name = 'activities/02_activity_detail.html'
+    template_name = 'activities/06_activity_detail.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['notes'] = Note.objects.filter(activity=self.object).order_by('-created_at')
+        notes = Note.objects.filter(activity=self.object).order_by('-created_at')
+
+        paginator = Paginator(notes, 5)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context['notes'] = page_obj
+        context['page_obj'] = page_obj
         return context
 
 
 class ActivityUpdateView(LoginRequiredMixin, UpdateView):
     model = Activity
     form_class = LoggedInUserActivityForm
-    template_name = 'activities/03_activity_update.html'
+    template_name = 'activities/08_activity_update.html'
 
     def get_success_url(self):
         return reverse_lazy('activities:activity_detail', kwargs={'pk': self.object.pk})
 
-
-class ActivityStatusUpdate(LoginRequiredMixin, UpdateView):
-    model = Activity
-    fields = ['status']
-    http_method_names = ['post']
-
-    def get_success_url(self):
-        return self.request.META.get('HTTP_REFERER', reverse_lazy('activities:team_dashboard'))

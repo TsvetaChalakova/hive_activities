@@ -1,0 +1,93 @@
+/* Project Container */
+.project-container {
+    width: 100%;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    min-width: 320px;
+}
+
+/* Header Styles */
+.project-header {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    padding: 1.5rem;
+}
+
+.project-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.action-buttons .btn {
+    margin-left: 0.5rem;
+    min-width: 100px;
+}
+
+/* Content Styles */
+.project-content {
+    padding: 2rem;
+    background-color: white;
+}
+
+.project-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* Details List Styles */
+.details-list {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+}
+
+.details-list dt {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.details-list dd {
+    margin-bottom: 1rem;
+    color: #6c757d;
+}
+
+/* Team Table Styles */
+.team-table {
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.team-table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    padding: 1rem;
+    font-weight: 600;
+}
+
+.team-table td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.team-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Description Box */
+.description-box {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}

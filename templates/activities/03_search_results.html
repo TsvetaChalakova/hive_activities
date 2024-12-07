@@ -47,7 +47,7 @@
                 <div class="card-body">
                     <div class="list-group">
                         {% for activity in activities %}
-                            <a href="{% url 'activities:activity_detail' activity.pk %}" 
+                            <a href="{% url 'activities:activity_detail' pk=activity.pk %}"
                                class="list-group-item list-group-item-action">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <h6 class="mb-1">{{ activity.title }}</h6>

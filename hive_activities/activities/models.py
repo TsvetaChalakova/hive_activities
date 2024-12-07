@@ -10,7 +10,7 @@ User = get_user_model()
 
 class Activity(models.Model):
     STATUS_CHOICES = [
-        ('TODO', 'To Do'),
+        ('TO_DO', 'To Do'),
         ('IN_PROGRESS', 'In Progress'),
         ('COMPLETED', 'Completed')
     ]
@@ -47,14 +47,14 @@ class Activity(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='TODO'
+        default='TO_DO'
     )
     priority = models.CharField(
         max_length=10,
         choices=PRIORITY_CHOICES,
         default='MEDIUM'
     )
-    due_date = models.DateField(null=True, blank=True)
+    due_date = models.DateField(null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     session_key = models.CharField(max_length=40, null=True, blank=True)

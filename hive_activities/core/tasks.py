@@ -13,7 +13,7 @@ def check_approaching_due_dates():
     activities = Activity.objects.filter(
         due_date__lte=due_date_threshold,
         due_date__gt=timezone.now(),
-        status__in=['TODO', 'IN_PROGRESS']
+        status__in=['TO_DO', 'IN_PROGRESS']
     )
 
     for activity in activities:

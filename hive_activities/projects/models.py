@@ -58,6 +58,7 @@ class ProjectMembership(models.Model):
     ROLES = (
         ('MEMBER', 'Team Member'),
         ('MANAGER', 'Project Manager'),
+        ('VIEWER', 'Viewer'),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)

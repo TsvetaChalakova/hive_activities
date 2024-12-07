@@ -15,8 +15,9 @@ class ProjectListView(LoginRequiredMixin, ListView):
     context_object_name = 'projects'
     paginate_by = 10
 
-    # def get_queryset(self):
-    #     return Project.objects.filter(team_members=self.request.user)
+    def get_queryset(self):
+        return Project.objects.filter(team_members=self.request.user)
+
 
 class ProjectCreateView(LoginRequiredMixin, CreateView):
     model = Project
@@ -43,7 +44,7 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['activities'] = self.object.activities.all()
-        context['memberships'] = self.object.team_members.all()
+        context['memberships'] = self.object.memberships.select_related('user')
         return context
 
 
@@ -56,33 +57,10 @@ class ProjectUpdateView(LoginRequiredMixin, UpdateView):
         return reverse_lazy('projects:project_detail', kwargs={'pk': self.object.pk})
 
 
-class ProjectDeleteView(LoginRequiredMixin, DeleteView):
-    model = Project
-    template_name = 'projects/project_delete.html'
-    success_url = reverse_lazy('projects:project_list')
-
-
-class ProjectMembersView(LoginRequiredMixin, ListView):
-    template_name = 'projects/04_project_members.html'
-    context_object_name = 'memberships'
-
-    def get_queryset(self):
-        self.project = get_object_or_404(Project, pk=self.kwargs['pk'])
-        return ProjectMembership.objects.filter(
-            project=self.project
-        ).select_related('user')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['project'] = self.project
-        context['is_manager'] = self.project.manager == self.request.user
-        return context
-
-
 class AddProjectMemberView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = ProjectMembership
     form_class = ProjectMembershipForm
-    template_name = 'projects/05_add_project_member.html'
+    template_name = 'projects/04_add_project_member.html'
 
     def dispatch(self, request, *args, **kwargs):
         self.project = get_object_or_404(Project, pk=self.kwargs['pk'])
@@ -109,4 +87,4 @@ class AddProjectMemberView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('projects:project_members', kwargs={'pk': self.project.pk})
+        return reverse_lazy('projects:project_detail', kwargs={'pk': self.project.pk})

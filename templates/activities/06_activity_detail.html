@@ -1,0 +1,106 @@
+{% extends 'common/01_base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-md-9 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>{{ activity.title }}</h2>
+                    <div class="btn-group">
+                        <a href="{% url 'activities:note_create' activity.pk %}" class="btn btn-primary me-2">New Note</a>
+                        <a href="{% url 'activities:activity_edit' activity.pk %}" class="btn btn-primary me-2">Edit</a>
+                        <a href="{% url 'activities:team_dashboard' %}" class="btn btn-secondary">Back</a>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5>Description</h5>
+                        <p>{{ activity.description|default:"No description provided" }}</p>
+
+                        <h5 class="mt-4">Notes</h5>
+                        {% if notes %}
+                            {% for note in notes %}
+                                <div class="mb-3">
+                                    <p><strong>{{ note.created_by.profile.get_full_name }}</strong> ({{ note.created_at|date:'SHORT_DATETIME_FORMAT' }}):</p>
+                                    <p>{{ note.content }}</p>
+                                </div>
+                            {% endfor %}
+                            <nav aria-label="Notes pagination">
+                                <ul class="pagination">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1" aria-label="First">
+                                                <span aria-hidden="true">&laquo;&laquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    <li class="page-item disabled">
+                                        <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                                    </li>
+
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                                <span aria-hidden="true">&raquo;&raquo;</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <p class="mb-0">No notes yet.
+                                    {% if can_add_notes %}
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#addNoteModal">Add the first note</a>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5>Details</h5>
+                                <dl>
+                                    <dt>Status</dt>
+                                    <dd><span class="badge bg-{{ activity.status|lower }}">{{ activity.get_status_display }}</span></dd>
+
+                                    <dt>Project</dt>
+                                    <dd>{{ activity.project.title }}</dd>
+
+                                    <dt>Assigned To</dt>
+                                    <dd>{{ activity.assigned_to.profile.get_full_name }}</dd>
+
+                                    <dt>Due Date</dt>
+                                    <dd>{{ activity.due_date|default:"No due date" }}</dd>
+
+                                    <dt>Created</dt>
+                                    <dd>{{ activity.created_at|date }}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/newNote.js' %}"></script>
+{% endblock %}

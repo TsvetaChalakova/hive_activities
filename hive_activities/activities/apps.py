@@ -8,3 +8,5 @@ class ActivitiesConfig(AppConfig):
     def ready(self):
         import hive_activities.activities.signals
 
+
+

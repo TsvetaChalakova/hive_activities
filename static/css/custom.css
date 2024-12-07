@@ -739,11 +739,14 @@ progress {
     --bs-gutter-x: 1.5rem;
     --bs-gutter-y: 0;
     width: 100%;
+    height: 100%;
     padding-right: calc(var(--bs-gutter-x) * 0.5);
     padding-left: calc(var(--bs-gutter-x) * 0.5);
     margin-right: auto;
     margin-left: auto;
+
 }
+
 
 @media (min-width: 576px) {
     .container-sm, .container {
@@ -11847,7 +11850,7 @@ textarea.form-control-lg {
     }
 }
 
-.badge.bg-todo { background-color: #6c757d; }
+.badge.bg-to_do { background-color: #6c757d; }
 .badge.bg-in_progress { background-color: #007bff; }
 .badge.bg-completed { background-color: #28a745; }
 .text-danger { font-weight: bold; }
@@ -11916,3 +11919,34 @@ body {
     background-color: rgba(255, 255, 255, 0.3);
     color: white;
 }
+
+/*Color changes for status*/
+.activity-card {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.activity-card[data-status="TO_DO"] {
+    background-color: #e0f7fa;
+}
+
+.activity-card[data-status="IN_PROGRESS"] {
+    background-color: #e8f5e9;
+}
+
+.activity-card[data-status="COMPLETED"] {
+    background-color: #eceff1;
+}
+
+.activity-card:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.activity-card .text-end {
+    text-align: right;
+}
+

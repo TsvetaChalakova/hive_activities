@@ -13,7 +13,7 @@
                 {{ form|crispy }}
                 <div class="mt-3">
                     <button type="submit" class="btn btn-primary">Add Member</button>
-                    <a href="{% url 'projects:project_members' pk=project.pk %}" 
+                    <a href="{% url 'projects:project_detail' pk=project.pk %}" 
                        class="btn btn-secondary">
                         Cancel
                     </a>
@@ -23,3 +23,5 @@
     </div>
 </div>
 {% endblock %}
+
+
