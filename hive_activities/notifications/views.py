@@ -1,7 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import ListView
-
 from hive_activities.notifications.models import Notification
 
 
@@ -16,6 +15,3 @@ class NotificationListView(LoginRequiredMixin, ListView):
             recipient=self.request.user
         ).order_by('-created_at')
 
-#
-# class MarkNotificationReadView(ListView):
-#     pass

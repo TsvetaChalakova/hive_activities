@@ -6,7 +6,6 @@ from django.contrib.auth.views import LoginView, PasswordResetView, PasswordRese
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.translation import gettext as _
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, DetailView, UpdateView, CreateView, TemplateView, ListView
 from .forms import HiveActivitiesAuthenticationForm, ProfileEditForm, AppUserCreationForm

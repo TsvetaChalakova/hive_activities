@@ -12,9 +12,6 @@
                 <form method="post" action="{% url 'activities:activity_create' %}" id="createActivityForm">
                     {% csrf_token %}
                     {{ form|crispy }}
-                    {% if selected_project %}
-                        <input type="hidden" name="project" value="{{ selected_project }}">
-                    {% endif %}
                 </form>
             </div>
             <div class="modal-footer">

@@ -68,13 +68,27 @@ class SearchResultsView(TemplateView):
 
 
 def individual_view(request):
-    if not request.session.session_key:
+    user = request.user
+    is_authenticated = user.is_authenticated
+
+    if not is_authenticated and not request.session.session_key:
         request.session.create()
+        messages.warning(
+            request,
+            'Note: Activities created here will be deleted when your session expires. '
+            'Create an account to save them permanently.'
+        )
 
     activities = Activity.objects.filter(
-        session_key=request.session.session_key,
         project__isnull=True
-    ).order_by('due_date')
+    )
+
+    if is_authenticated:
+        activities = activities.filter(created_by=user)
+    else:
+        activities = activities.filter(session_key=request.session.session_key)
+
+    activities = activities.order_by('due_date')
 
     paginator = Paginator(activities, 4)
     page_number = request.GET.get('page')
@@ -84,7 +98,12 @@ def individual_view(request):
         form = IndividualActivityForm(request.POST)
         if form.is_valid():
             activity = form.save(commit=False)
-            activity.session_key = request.session.session_key
+
+            if is_authenticated:
+                activity.created_by = user
+            else:
+                activity.session_key = request.session.session_key
+
             activity.save()
             messages.success(request, 'Activity created successfully!')
             return redirect('activities:individual_dashboard')
@@ -108,17 +127,33 @@ def individual_view(request):
     elif export_format == 'excel':
         return export_data(activities, headers, row_data, file_type='excel')
 
-    return render(request, 'activities/02_Individual_dashboard.html', {
+    context = {
         'activities': page_obj,
         'form': form,
-    })
+        'is_authenticated': is_authenticated,
+    }
+
+    return render(request, 'activities/02_Individual_dashboard.html', context)
 
 
 @require_http_methods(["POST"])
 @csrf_protect
 def update_activity_status(request, pk):
     try:
-        activity = Activity.objects.get(id=pk, session_key=request.session.session_key)
+        activity_query = Activity.objects.filter(id=pk)
+
+        if request.user.is_authenticated:
+            activity_query = activity_query.filter(created_by=request.user)
+        else:
+            activity_query = activity_query.filter(session_key=request.session.session_key)
+
+        activity = activity_query.first()
+
+        if not activity:
+            return JsonResponse({
+                'success': False,
+                'error': 'Activity not found'
+            }, status=404)
 
         if activity.status == 'TO_DO':
             new_status = 'IN_PROGRESS'
@@ -156,25 +191,44 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
     context_object_name = 'activities'
 
     def get_queryset(self):
-        queryset = Activity.objects.filter(
-            Q(assigned_to=self.request.user) |
-            Q(project__team_members=self.request.user)
-        ).select_related(
-            'project',
-            'assigned_to'
-        ).order_by('created_at').distinct()
-
         project_id = self.request.GET.get('project')
-        if project_id:
-            queryset = queryset.filter(project_id=project_id)
+        query = Activity.objects.select_related('project', 'assigned_to')
 
-        return queryset
+        if project_id == 'personal':
+
+            return query.filter(
+                created_by=self.request.user,
+                project__isnull=True
+            ).order_by('created_at')
+
+        elif project_id and project_id.isdigit():
+
+            return query.filter(
+                Q(project_id=project_id) &
+                Q(assigned_to=self.request.user)|
+                Q(project__team_members=self.request.user)
+            ).order_by('created_at').distinct()
+        else:
+
+            return query.filter(
+                Q(project__isnull=True, created_by=self.request.user) |
+                Q(assigned_to=self.request.user) |
+                Q(project__team_members=self.request.user)
+            ).order_by('created_at').distinct()
 
     def get_context_data(self, **kwargs):
+
         context = super().get_context_data(**kwargs)
+
         context['projects'] = Project.objects.filter(
             team_members=self.request.user
         ).order_by('title')
+
+        context['personal_activities'] = Activity.objects.filter(
+            created_by=self.request.user,
+            project__isnull=True
+        )
+
         context['selected_project'] = self.request.GET.get('project')
         context['form'] = LoggedInUserActivityForm()
         return context
@@ -188,7 +242,7 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
             headers = ['Title', 'Project', 'Status', 'Assigned To', 'Due Date']
             row_data = lambda activity: [
                 activity.title,
-                activity.project.title if activity.project else '',
+                activity.project.title if activity.project else 'Personal Task',
                 activity.get_status_display(),
                 activity.assigned_to.profile.get_full_name() if activity.assigned_to else 'Unassigned',
                 activity.due_date.strftime('%Y-%m-%d') if activity.due_date else 'No due date',
@@ -196,6 +250,23 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
             return export_data(queryset, headers, row_data, file_type=export_format)
 
         return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        form = LoggedInUserActivityForm(request.POST)
+        if form.is_valid():
+            activity = form.save(commit=False)
+
+            if request.GET.get('project') == 'personal':
+                activity.project = None
+                activity.created_by = request.user
+
+            activity.save()
+            messages.success(request, 'Activity created successfully!')
+
+            return redirect(f"{reverse_lazy('activities:team_dashboard')}?project={request.GET.get('project', '')}")
+
+        messages.error(request, 'Error creating activity. Please check the form.')
+        return self.get(request, *args, **kwargs)
 
 
 class ActivityCreateView(CreateView):
@@ -239,14 +310,19 @@ class ActivityDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         activity = self.object
-        notes = Note.objects.filter(activity=activity).order_by('-created_at')
 
-        paginator = Paginator(notes, 5)
-        page_number = self.request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        context['notes'] = page_obj
-        context['page_obj'] = page_obj
-        context['can_add_notes'] = self.request.user.has_perm('activities.add_note')
+        is_personal_task = activity.project is None
+        context['is_personal_task'] = is_personal_task
+
+        if not is_personal_task:
+            notes = Note.objects.filter(activity=activity).order_by('-created_at')
+            paginator = Paginator(notes, 5)
+            page_number = self.request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+            context['notes'] = page_obj
+            context['page_obj'] = page_obj
+            context['can_add_notes'] = self.request.user.has_perm('activities.add_note')
+
         return context
 
 

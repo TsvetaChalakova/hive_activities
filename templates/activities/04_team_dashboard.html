@@ -13,6 +13,10 @@
                        class="list-group-item list-group-item-action {% if not selected_project %}active{% endif %}">
                         All Activities
                     </a>
+                    <a href="{% url 'activities:team_dashboard' %}?project=personal"
+                       class="list-group-item list-group-item-action {% if selected_project == 'personal' %}active{% endif %}">
+                        My Personal Activities
+                    </a>
                     {% for project in projects %}
                         <a href="{% url 'activities:team_dashboard' %}?project={{ project.id }}"
                            class="list-group-item list-group-item-action {% if selected_project|stringformat:'s' == project.id|stringformat:'s' %}active{% endif %}">
@@ -64,18 +68,24 @@
                         {% for activity in activities %}
                             <tr>
                                 <td><a href="{% url 'activities:activity_detail' pk=activity.pk %}">{{ activity.title }}</a></td>
-                                <td>{{ activity.project.title }}</td>
                                 <td>
-                        <span class="badge bg-{{ activity.status|lower }}">
-                            {{ activity.get_status_display }}
-                        </span>
+                                    {% if activity.project %}
+                                        {{ activity.project.title }}
+                                    {% else %}
+                                        <span class="text-muted">Personal Task</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ activity.status|lower }}">
+                                        {{ activity.get_status_display }}
+                                    </span>
                                 </td>
                                 <td>{{ activity.assigned_to.profile.get_full_name|default:"Unassigned" }}</td>
                                 <td>
                                     {% if activity.due_date %}
                                         <span class="{% if activity.is_overdue %}text-danger{% endif %}">
-                                {{ activity.due_date }}
-                            </span>
+                                        {{ activity.due_date }}
+                                        </span>
                                     {% else %}
                                         <span class="text-muted">No due date</span>
                                     {% endif %}

@@ -34,7 +34,7 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     user_type = models.CharField(
         max_length=20,
         choices=UserType.choices,
-        default=UserType.TEAM_MEMBER
+        default=UserType.TEAM_MEMBER,
     )
 
     groups = models.ManyToManyField(

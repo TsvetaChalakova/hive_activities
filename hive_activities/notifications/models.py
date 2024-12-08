@@ -9,11 +9,19 @@ class Notification(models.Model):
     recipient = models.ForeignKey(
         User,
         related_name='notifications',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
-    note = models.ForeignKey(Note, on_delete=models.CASCADE)
+
+    note = models.ForeignKey(
+        Note,
+        on_delete=models.CASCADE,
+    )
+
     message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
 
     class Meta:
         ordering = ['-created_at']

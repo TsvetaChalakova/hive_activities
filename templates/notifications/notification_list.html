@@ -1,22 +1,40 @@
 {% extends 'common/01_base.html' %}
 
 {% block content %}
-<div class="notifications">
-    <h2>Your Notifications</h2>
-    {% if notifications %}
-        <ul>
-        {% for notification in notifications %}
-            <li>
-                New note added to activity {{ notification.note.activity.title }}
-                in project "{{ notification.note.activity.project.title }}"
-                by {{ notification.note.created_by.profile.get_full_name }}:
-                {{ notification.note.content|truncatewords:15 }}
-                <small>{{ notification.created_at|timesince }} ago</small>
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No new notifications</p>
-    {% endif %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Your Notifications</h2>
+            </div>
+
+            {% if notifications %}
+                <div class="list-group">
+                    {% for notification in notifications %}
+                        <div class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">
+                                    Note in "{{ notification.note.activity.title }}"
+                                </h5>
+                                <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                            </div>
+                            <p class="mb-1">{{ notification.note.content|truncatewords:30 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    Project: <strong>{{ notification.note.activity.project.title }}</strong> | 
+                                    By: <strong>{{ notification.note.created_by.profile.get_full_name }}</strong>
+                                </small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-bell-slash me-2"></i>
+                    No new notifications
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %}

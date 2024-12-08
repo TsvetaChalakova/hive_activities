@@ -12,13 +12,24 @@ class Note(models.Model):
         on_delete=models.CASCADE,
         related_name='notes'
     )
+
     content = models.TextField()
+
     created_by = models.ForeignKey(
         User,
         on_delete=models.DO_NOTHING,
         related_name='note_created_by',
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    is_closed = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    is_closed = models.BooleanField(
+        default=False,
+    )
 

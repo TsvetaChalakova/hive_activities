@@ -3,8 +3,6 @@ from django.db.models.signals import post_save
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import CreateView
-from rest_framework.reverse import reverse_lazy
-
 from hive_activities.activities.models import Activity
 from hive_activities.notes.forms import NoteForm
 from hive_activities.notes.models import Note

@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.core.exceptions import PermissionDenied
-
 from hive_activities.users.models import AppUser, UserProfile, RoleRequest
 
 
@@ -12,7 +11,7 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ("is_active", "is_staff", "user_type")
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Personal Info", {"fields": ("user_type", )}),
+        ("Personal Info", {"fields": ("user_type",)}),
         ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
     )
     add_fieldsets = (

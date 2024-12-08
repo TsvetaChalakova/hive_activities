@@ -2,7 +2,6 @@ from django.db import IntegrityError
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.template.loader import render_to_string
-
 from hive_activities.notes.models import Note
 from hive_activities.notifications.models import Notification
 from hive_activities.notifications.tasks import send_note_email_notification

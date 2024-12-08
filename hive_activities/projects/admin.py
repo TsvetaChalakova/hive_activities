@@ -23,6 +23,10 @@ class ProjectAdmin(admin.ModelAdmin):
         queryset.update(status='ON_HOLD')
     mark_as_on_hold.short_description = "Mark selected projects as on hold"
 
+    def mark_as_in_progress(self, request, queryset):
+        queryset.update(status='IN_PROGRESS')
+    mark_as_on_hold.short_description = "Mark selected projects as on in progress"
+
 
 @admin.register(ProjectMembership)
 class ProjectMembershipAdmin(admin.ModelAdmin):
