@@ -16,11 +16,15 @@ from hive_activities.projects.models import Project
 
 
 def home(request):
-    return render(request, 'common/../../templates/activities/01_home.html')
+    return render(request, 'activities/01_home.html')
+
+
+def custom_404_view(request, exception=None):
+    return render(request, 'common/404.html', status=404)
 
 
 class SearchResultsView(TemplateView):
-    template_name = 'common/../../templates/activities/03_search_results.html'
+    template_name = 'activities/03_search_results.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

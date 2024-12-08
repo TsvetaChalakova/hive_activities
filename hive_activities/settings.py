@@ -8,6 +8,14 @@ from rest_framework.reverse import reverse_lazy
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# SECURE_BROWSER_XSS_FILTER = True
+# SECURE_CONTENT_TYPE_NOSNIFF = True
+# X_FRAME_OPTIONS = 'DENY'
+# CSRF_COOKIE_SECURE = True
+# SESSION_COOKIE_SECURE = True
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_SAMESITE = None #'Strict' after debugging
 
 SECRET_KEY = config('SECRET_KEY')
 
@@ -96,6 +104,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -167,25 +178,55 @@ CELERY_TASK_ALWAYS_EAGER = True  # This will run tasks synchronously for debuggi
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'app.log',
+            'formatter': 'verbose',
+        },
+        'security_file': {
+            'class': 'logging.FileHandler',
+            'filename': 'security.log',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
+        '': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'django.request': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
             'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.security': {
+            'handlers': ['security_file'],
+            'level': 'WARNING',
             'propagate': True,
         },
         'celery': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        # Add this section for email logging
         'django.core.mail': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
         },
@@ -195,3 +236,4 @@ LOGGING = {
 # How often to clean up expired sessions (in seconds)
 SESSION_COOKIE_AGE = 86400
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
