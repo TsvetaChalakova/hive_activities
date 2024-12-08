@@ -15,5 +15,9 @@ class Notification(models.Model):
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ['recipient', 'note', 'created_at']
+
     def __str__(self):
         return f'Notification for {self.recipient} on {self.note}'

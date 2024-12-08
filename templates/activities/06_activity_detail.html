@@ -10,7 +10,6 @@
                     <h2>{{ activity.title }}</h2>
                     <div class="btn-group">
                         <a href="{% url 'activities:note_create' activity.pk %}" class="btn btn-primary me-2">New Note</a>
-                        <a href="{% url 'activities:activity_edit' activity.pk %}" class="btn btn-primary me-2">Edit</a>
                         <a href="{% url 'activities:team_dashboard' %}" class="btn btn-secondary">Back</a>
                     </div>
                 </div>
@@ -73,7 +72,9 @@
                     </div>
 
                     <div class="col-md-4">
+                        
                         <div class="card">
+                            <a href="{% url 'activities:activity_edit' activity.pk %}" class="text-decoration-none">
                             <div class="card-body">
                                 <h5>Details</h5>
                                 <dl>
@@ -93,6 +94,7 @@
                                     <dd>{{ activity.created_at|date }}</dd>
                                 </dl>
                             </div>
+                                </a>
                         </div>
                     </div>
                 </div>

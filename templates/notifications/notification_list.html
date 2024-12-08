@@ -1,18 +1,22 @@
 {% extends 'common/01_base.html' %}
 
 {% block content %}
-<div class="container">
+<div class="notifications">
     <h2>Your Notifications</h2>
-    <div class="notification-list">
+    {% if notifications %}
+        <ul>
         {% for notification in notifications %}
-            <div class="notification {% if not notification.is_read %}unread{% endif %}">
-                <h3>{{ notification.title }}</h3>
-                <p>{{ notification.message }}</p>
+            <li>
+                New note added to activity {{ notification.note.activity.title }}
+                in project "{{ notification.note.activity.project.title }}"
+                by {{ notification.note.created_by.profile.get_full_name }}:
+                {{ notification.note.content|truncatewords:15 }}
                 <small>{{ notification.created_at|timesince }} ago</small>
-            </div>
-        {% empty %}
-            <p>No notifications yet.</p>
+            </li>
         {% endfor %}
-    </div>
+        </ul>
+    {% else %}
+        <p>No new notifications</p>
+    {% endif %}
 </div>
 {% endblock %}

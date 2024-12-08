@@ -238,14 +238,15 @@ class ActivityDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        notes = Note.objects.filter(activity=self.object).order_by('-created_at')
+        activity = self.object
+        notes = Note.objects.filter(activity=activity).order_by('-created_at')
 
         paginator = Paginator(notes, 5)
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-
         context['notes'] = page_obj
         context['page_obj'] = page_obj
+        context['can_add_notes'] = self.request.user.has_perm('activities.add_note')
         return context
 
 

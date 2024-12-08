@@ -17,6 +17,8 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
 
     email = models.EmailField(
         unique=True,
+        blank=False,
+        null=False,
     )
 
     is_active = models.BooleanField(

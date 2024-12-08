@@ -6,7 +6,7 @@ class ActivitiesConfig(AppConfig):
     name = 'hive_activities.activities'
 
     def ready(self):
-        import hive_activities.activities.signals
+        pass
 
 
 

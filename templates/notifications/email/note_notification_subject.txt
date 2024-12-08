@@ -1,0 +1,1 @@
+New note added to {{ activity.title }} in {{ project.title }} by {{ created_by.first_name }} {{ created_by.last_name }}.

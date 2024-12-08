@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'hive_activities.activities.apps.ActivitiesConfig',
     'hive_activities.notes.apps.NotesConfig',
     'hive_activities.notifications.apps.NotificationsConfig',
@@ -36,6 +37,8 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'widget_tweaks',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -137,12 +140,11 @@ CELERY_BROKER_URL = config('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
-CELERY_BEAT_SCHEDULE = {
-    'check-due-dates': {
-        'task': 'taskflow.tasks.check_approaching_due_dates',
-        'schedule': timedelta(hours=1),
-    },
-}
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+CELERY_EMAIL_TASK_MAX_RETRIES = 3
+CELERY_EMAIL_TASK_RETRY_DELAY = 60
 
 # Notification settings
 EMAIL_BACKEND = config('EMAIL_BACKEND')
@@ -151,6 +153,40 @@ EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# Email settings debugging
+EMAIL_DEBUG = True  # This will print email info to console
+CELERY_TASK_ALWAYS_EAGER = True  # This will run tasks synchronously for debugging
+
+# Logging configuration
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'celery': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        # Add this section for email logging
+        'django.core.mail': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

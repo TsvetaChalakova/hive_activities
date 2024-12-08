@@ -35,7 +35,7 @@ class HiveLoginView(LoginView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, _('Invalid email or password.'))
+        messages.error(self.request, "Invalid email or password.")
         return super().form_invalid(form)
 
 

@@ -1,0 +1,12 @@
+Hi {{ recipient.first_name }},
+
+A new note has been added to the activity "{{ activity.title }}" in project "{{ project.title }}" by {{ created_by.first_name }} {{ created_by.last_name }}.
+
+Note Content:
+{{ note.content }}
+
+You can view this activity at:
+http{% if request.is_secure %}s{% endif %}://{{ domain }}/activities/{{ activity.id }}/
+
+Best regards,
+Your Project Team
