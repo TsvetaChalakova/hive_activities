@@ -8,7 +8,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>{{ activity.title }}</h2>
                     <div class="btn-group">
-                        {% if not is_personal_task %}
+                        {% if not is_personal_task and not request.user.is_viewer %}
                             <a href="{% url 'activities:note_create' activity.pk %}" class="btn btn-primary me-2">New Note</a>
                         {% endif %}
                         <a href="{% url 'activities:team_dashboard' %}" class="btn btn-secondary">Back</a>
@@ -77,26 +77,28 @@
 
                     <div class="col-md-4">
                         <div class="card">
-                            <a href="{% url 'activities:activity_edit' activity.pk %}" class="text-decoration-none">
-                                <div class="card-body">
-                                    <h5>Details</h5>
-                                    <dl>
-                                        <dt>Status</dt>
-                                        <dd><span class="badge bg-{{ activity.status|lower }}">{{ activity.get_status_display }}</span></dd>
+                            {% if not request.user.is_viewer %}
+                                <a href="{% url 'activities:activity_edit' activity.pk %}" class="text-decoration-none">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5>Details</h5>
+                                <dl>
+                                    <dt>Status</dt>
+                                    <dd><span class="badge bg-{{ activity.status|lower }}">{{ activity.get_status_display }}</span></dd>
 
-                                        <dt>Project</dt>
-                                        <dd>{% if activity.project %}{{ activity.project.title }}{% else %}Personal Task{% endif %}</dd>
+                                    <dt>Project</dt>
+                                    <dd>{% if activity.project %}{{ activity.project.title }}{% else %}Personal Task{% endif %}</dd>
 
-                                        <dt>Assigned To</dt>
-                                        <dd>{% if activity.assigned_to %}{{ activity.assigned_to.profile.get_full_name }}{% else %}Not Assigned{% endif %}</dd>
+                                    <dt>Assigned To</dt>
+                                    <dd>{% if activity.assigned_to %}{{ activity.assigned_to.profile.get_full_name }}{% else %}Not Assigned{% endif %}</dd>
 
-                                        <dt>Due Date</dt>
-                                        <dd>{{ activity.due_date|default:"No due date" }}</dd>
+                                    <dt>Due Date</dt>
+                                    <dd>{{ activity.due_date|default:"No due date" }}</dd>
 
-                                        <dt>Created</dt>
-                                        <dd>{{ activity.created_at|date }}</dd>
-                                    </dl>
-                                </div>
+                                    <dt>Created</dt>
+                                    <dd>{{ activity.created_at|date }}</dd>
+                                </dl>
+                            </div>
                             </a>
                         </div>
                     </div>

@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
@@ -23,7 +23,7 @@ def custom_404_view(request, exception=None):
     return render(request, 'common/404.html', status=404)
 
 
-class SearchResultsView(TemplateView):
+class SearchResultsView(LoginRequiredMixin, TemplateView):
     template_name = 'activities/03_search_results.html'
 
     def get_context_data(self, **kwargs):
@@ -31,35 +31,20 @@ class SearchResultsView(TemplateView):
         query = self.request.GET.get('q', '')
 
         if query:
-            if self.request.user.is_authenticated:
+            projects = Project.objects.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query),
+                Q(team_members=self.request.user) |
+                Q(manager=self.request.user)
+            ).distinct()[:10]
 
-                projects = Project.objects.filter(
-                    Q(title__icontains=query) |
-                    Q(description__icontains=query),
-                    Q(team_members=self.request.user) |
-                    Q(manager=self.request.user)
-                ).distinct()[:10]
-
-                activities = Activity.objects.filter(
-                    Q(title__icontains=query) |
-                    Q(description__icontains=query),
-                    Q(assigned_to=self.request.user) |
-                    Q(project__team_members=self.request.user) |
-                    Q(project__manager=self.request.user)
-                ).distinct()[:10]
-            else:
-
-                session_activities = self.request.session.get('viewed_activities', [])
-                projects = Project.objects.none()
-
-                if session_activities:
-                    activities = Activity.objects.filter(
-                        Q(title__icontains=query) |
-                        Q(description__icontains=query),
-                        id__in=session_activities
-                    ).distinct()[:10]
-                else:
-                    activities = Activity.objects.none()
+            activities = Activity.objects.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query),
+                Q(assigned_to=self.request.user) |
+                Q(project__team_members=self.request.user) |
+                Q(project__manager=self.request.user)
+            ).distinct()[:10]
 
             context.update({
                 'projects': projects,
@@ -273,12 +258,15 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
         return self.get(request, *args, **kwargs)
 
 
-class ActivityCreateView(CreateView):
+class ActivityCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Activity
     form_class = IndividualActivityForm
     template_name = 'activities/05_modal_create_activity.html'
     success_message = "Activity was created successfully!"
     success_url = reverse_lazy('activities:team_dashboard')
+
+    def test_func(self):
+        return not self.request.user.is_viewer()
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
@@ -330,10 +318,13 @@ class ActivityDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class ActivityUpdateView(LoginRequiredMixin, UpdateView):
+class ActivityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Activity
     form_class = LoggedInUserActivityForm
     template_name = 'activities/08_activity_update.html'
+
+    def test_func(self):
+        return not self.request.user.is_viewer()
 
     def get_success_url(self):
         return reverse_lazy('activities:activity_detail', kwargs={'pk': self.object.pk})

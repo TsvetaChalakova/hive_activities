@@ -10,6 +10,8 @@ from django.urls import reverse_lazy
 from django.views.generic import DeleteView, DetailView, UpdateView, CreateView, TemplateView, ListView
 from .forms import HiveActivitiesAuthenticationForm, ProfileEditForm, AppUserCreationForm
 from .models import UserProfile, RoleRequest, UserType
+from hive_activities.users.tasks import send_welcome_email
+
 
 UserModel = get_user_model()
 
@@ -55,6 +57,12 @@ class SignUpView(CreateView):
         team_member_group = Group.objects.get(name='Team Member')
         self.object.groups.add(team_member_group)
         messages.success(self.request, "Your account has been created successfully!")
+        profile = self.object.profile
+        send_welcome_email.delay(
+            self.object.email,
+            profile.first_name,
+            profile.last_name
+        )
         return response
 
     def form_invalid(self, form):
@@ -159,7 +167,6 @@ class RoleRequestManagementView(LoginRequiredMixin, UserPassesTestMixin, ListVie
         return self.request.user.is_staff_admin()
 
     def post(self, request, *args, **kwargs):
-
         selected_requests = request.POST.getlist('selected_requests')
         action = request.POST.get('action')
 
@@ -169,16 +176,24 @@ class RoleRequestManagementView(LoginRequiredMixin, UserPassesTestMixin, ListVie
 
         role_requests = RoleRequest.objects.filter(id__in=selected_requests)
         project_manager_group = Group.objects.get(name='Project Manager')
+        viewer_group = Group.objects.get(name='Viewer')
         team_member_group = Group.objects.get(name='Team Member')
 
         if action == 'approve':
             for role_request in role_requests:
                 role_request.approved = True
-                role_request.user.user_type = UserType.PROJECT_MANAGER
-                role_request.user.save()
-                role_request.user.groups.add(project_manager_group)
+                if role_request.requested_role == 'Project Manager':
+                    new_group = project_manager_group
+                    role_request.user.user_type = UserType.PROJECT_MANAGER
+                else:
+                    new_group = viewer_group
+                    role_request.user.user_type = UserType.VIEWER
+
+                role_request.user.groups.add(new_group)
                 role_request.user.groups.remove(team_member_group)
+                role_request.user.save()
                 role_request.save()
+
             messages.success(request, f"{len(role_requests)} role requests approved.")
 
         elif action == 'reject':

@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models.signals import post_save
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -8,10 +8,13 @@ from hive_activities.notes.forms import NoteForm
 from hive_activities.notes.models import Note
 
 
-class NoteCreateView(LoginRequiredMixin, CreateView):
+class NoteCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Note
     form_class = NoteForm
     template_name = 'notes/note_add.html'
+
+    def test_func(self):
+        return not self.request.user.is_viewer()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

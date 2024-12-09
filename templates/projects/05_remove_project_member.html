@@ -1,0 +1,14 @@
+{% extends 'common/01_base.html' %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h4>Remove Team Member</h4>
+        <p>Are you sure you want to remove {{ membership.user.profile.get_full_name }} from the project "{{ project.title }}"?</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Yes, Remove</button>
+            <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+{% endblock %}
