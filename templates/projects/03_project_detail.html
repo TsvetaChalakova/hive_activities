@@ -13,7 +13,7 @@
                 <p><strong>Start Date:</strong> {{ project.start_date }}</p>
                 <p><strong>End Date:</strong> {{ project.due_date }}</p>
                 <div class="mt-3">
-                    <a href="{% url 'projects:project_list' %}" class="btn btn-secondary me-2">Back</a>
+                    <a href="javascript:history.go(-1)" class="btn btn-secondary me-2">Back</a>
                     {% if not request.user.is_team_member and not request.user.is_viewer %}
                         <a href="{% url 'projects:project_update' project.pk %}" class="btn btn-primary">Edit</a>
                     {% endif %}
@@ -32,7 +32,9 @@
                         <th>Email</th>
                         <th>Role</th>
                         <th>Joined At</th>
+                        {% if not request.user.is_team_member and not request.user.is_viewer %}
                         <th>Action</th>
+                        {% endif %}
                     </tr>
                     </thead>
                     <tbody class="small">

@@ -54,10 +54,12 @@ class SignUpView(CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         login(self.request, self.object)
+
         team_member_group = Group.objects.get(name='Team Member')
         self.object.groups.add(team_member_group)
         messages.success(self.request, "Your account has been created successfully!")
         profile = self.object.profile
+
         send_welcome_email.delay(
             self.object.email,
             profile.first_name,
@@ -140,17 +142,19 @@ class RoleRequestView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     template_name = 'users/07_request_role_change.html'
 
     def test_func(self):
-        return self.request.user.is_team_member() or self.request.user.is_viewer()
+        return self.request.user.is_team_member()
 
     def handle_no_permission(self):
-        messages.error(self.request, "Only team members and viewers can request role changes.")
+        messages.error(self.request, "Only team members can request role changes.")
         return redirect('activities:team_dashboard')
 
     def form_valid(self, form):
         form.instance.user = self.request.user
+
         if RoleRequest.objects.filter(user=self.request.user, approved__isnull=True).exists():
             messages.error(self.request, "You already have a pending request.")
             return redirect('activities:team_dashboard')
+
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -174,23 +178,20 @@ class RoleRequestManagementView(LoginRequiredMixin, UserPassesTestMixin, ListVie
             messages.warning(request, "No requests were selected.")
             return redirect('users:pending_role_requests')
 
-        role_requests = RoleRequest.objects.filter(id__in=selected_requests)
-        project_manager_group = Group.objects.get(name='Project Manager')
-        viewer_group = Group.objects.get(name='Viewer')
         team_member_group = Group.objects.get(name='Team Member')
+        role_requests = RoleRequest.objects.filter(id__in=selected_requests)
 
         if action == 'approve':
             for role_request in role_requests:
-                role_request.approved = True
-                if role_request.requested_role == 'Project Manager':
-                    new_group = project_manager_group
-                    role_request.user.user_type = UserType.PROJECT_MANAGER
-                else:
-                    new_group = viewer_group
-                    role_request.user.user_type = UserType.VIEWER
+                # Convert PROJECT_MANAGER to "Project Manager", looks stupid but works
+                group_name = role_request.requested_role.replace('_', ' ').title()
+                new_group = Group.objects.get(name=group_name)
 
-                role_request.user.groups.add(new_group)
+                role_request.approved = True
+                role_request.user.user_type = role_request.requested_role
                 role_request.user.groups.remove(team_member_group)
+                role_request.user.groups.add(new_group)
+
                 role_request.user.save()
                 role_request.save()
 

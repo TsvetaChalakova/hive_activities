@@ -1,6 +1,10 @@
-from django.db.models.signals import post_migrate
+from django.apps import apps
+from django.contrib.auth import get_user_model
+from django.db.models.signals import post_migrate, post_save
+from django.dispatch import receiver
 
 
+@receiver(post_migrate)
 def create_groups_and_permissions(sender, **kwargs):
 
     apps = kwargs['apps']
@@ -21,5 +25,12 @@ def create_groups_and_permissions(sender, **kwargs):
         group.permissions.set(permissions)
 
 
+@receiver(post_save, sender=None)
+def create_user_profile(sender, instance, created, **kwargs):
 
+    User = get_user_model()
+
+    if sender == User and created:
+        UserProfile = apps.get_model('users', 'UserProfile')
+        UserProfile.objects.get_or_create(user=instance)
 

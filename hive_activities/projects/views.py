@@ -52,6 +52,7 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
         memberships = self.object.memberships.select_related('user')
         memberships_paginator = Paginator(memberships, 5)
         memberships_page_number = self.request.GET.get('memberships_page', 1)
+
         try:
             context['memberships'] = memberships_paginator.get_page(memberships_page_number)
         except Exception:
@@ -60,6 +61,7 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
         activities = self.object.activities.all()
         activities_paginator = Paginator(activities, 10)
         activities_page_number = self.request.GET.get('activities_page', 1)
+
         try:
             context['activities'] = activities_paginator.get_page(activities_page_number)
         except Exception:

@@ -1,10 +1,10 @@
-{% extends 'common/../common/01_base.html' %}
+{% extends 'common/01_base.html' %}
 
 {% block content %}
 <div class="container mt-4">
     <h2>Role Request Management</h2>
     
-    {% if role_requests %}
+    {% if role_requests and request.user.is_staff_admin %}
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">
@@ -36,9 +36,9 @@
                             <input type="checkbox" name="selected_requests" value="{{ request.id }}" 
                                    class="form-check-input request-checkbox">
                         </td>
-                        <td>{{ request.user.email }}</td>
+                        <td>{{ request.user.profile.get_full_name }}</td>
                         <td>Team Member</td>
-                        <td>{{ request.requested_role }}</td>
+                        <td>{{ request.get_requested_role_display }}</td>
                         <td>{{ request.created_at|date:"M d, Y" }}</td>
                     </tr>
                     {% endfor %}
