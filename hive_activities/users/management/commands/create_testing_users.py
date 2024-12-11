@@ -69,7 +69,7 @@ class Command(BaseCommand):
                 'group': 'Project Manager',
                 'profile_data': {
                     'first_name': 'Test',
-                    'last_name': 'Super',
+                    'last_name': 'Project Manager',
                 }
             }
         ]
