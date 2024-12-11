@@ -71,11 +71,13 @@ class AppUserCreationForm(UserCreationForm):
         user = super().save(commit=False)
         if commit:
             user.save()
-            UserProfile.objects.create(
+            UserProfile.objects.get_or_create(
                 user=user,
-                first_name=self.cleaned_data['first_name'],
-                last_name=self.cleaned_data['last_name'],
-                telephone=self.cleaned_data['telephone']
+                defaults={
+                    'first_name': self.cleaned_data['first_name'],
+                    'last_name': self.cleaned_data['last_name'],
+                    'telephone': self.cleaned_data['telephone']
+                }
             )
         return user
 

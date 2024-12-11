@@ -25,10 +25,12 @@ class AuthenticationViewsTest(TestCase):
         team_member_group = Group.objects.get(name='Team Member')
         self.user.groups.add(team_member_group)
 
-        UserProfile.objects.create(
+        UserProfile.objects.get_or_create(
             user=self.user,
-            first_name='Test',
-            last_name='User'
+            defaults={
+                'first_name': 'Test',
+                'last_name': 'User'
+            }
         )
 
     def test_login_success(self):
@@ -125,10 +127,12 @@ class ProfileViewsTest(TestCase):
             email='test@example.com',
             password='testpass123'
         )
-        self.profile = UserProfile.objects.create(
+        self.profile, _ = UserProfile.objects.get_or_create(
             user=self.user,
-            first_name='Test',
-            last_name='User'
+            defaults={
+                'first_name': 'Test',
+                'last_name': 'User'
+            }
         )
         self.client.login(email='test@example.com', password='testpass123')
 
@@ -168,10 +172,12 @@ class RoleRequestViewsTest(TestCase):
             password='pass123',
             user_type=UserType.TEAM_MEMBER
         )
-        UserProfile.objects.create(
+        UserProfile.objects.get_or_create(
             user=self.team_member,
-            first_name='Team',
-            last_name='Member'
+            defaults={
+                'first_name': 'Test',
+                'last_name': 'User'
+            }
         )
 
         self.admin = User.objects.create_user(
@@ -180,10 +186,12 @@ class RoleRequestViewsTest(TestCase):
             user_type=UserType.STAFF_ADMIN,
             is_staff=True
         )
-        UserProfile.objects.create(
+        UserProfile.objects.get_or_create(
             user=self.admin,
-            first_name='Admin',
-            last_name='User'
+            defaults={
+                'first_name': 'Test',
+                'last_name': 'User'
+            }
         )
 
         self.team_member.groups.add(self.team_member_group)
@@ -227,10 +235,12 @@ class PasswordResetTests(TestCase):
         team_member_group = Group.objects.get(name='Team Member')
         self.user.groups.add(team_member_group)
 
-        UserProfile.objects.create(
+        UserProfile.objects.get_or_create(
             user=self.user,
-            first_name='Test',
-            last_name='User'
+            defaults={
+                'first_name': 'Test',
+                'last_name': 'User'
+            }
         )
 
     def test_password_reset_request(self):
