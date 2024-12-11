@@ -6,6 +6,7 @@ User = get_user_model()
 
 
 class Notification(models.Model):
+
     recipient = models.ForeignKey(
         User,
         related_name='notifications',

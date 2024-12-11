@@ -9,12 +9,16 @@ from hive_activities.notifications.tasks import send_note_email_notification
 
 @receiver(post_save, sender=Note)
 def create_notification(sender, instance, created, **kwargs):
+
     if created:
+
         project = instance.activity.project
         team_members = project.team_members.all()
 
         for member in team_members:
+
             if member != instance.created_by:
+
                 try:
                     context = {
                         'recipient': member,

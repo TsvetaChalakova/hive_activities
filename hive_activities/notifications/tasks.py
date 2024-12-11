@@ -7,9 +7,10 @@ from django.conf import settings
 
 @shared_task(bind=True, max_retries=3)
 def send_note_email_notification(self, recipient_data, note_data, activity_data, project_data, creator_data):
-    try:
 
+    try:
         domain = Site.objects.get_current().domain
+
         if not domain:
             domain = 'localhost:8000'
 

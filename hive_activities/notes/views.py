@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models.signals import post_save
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import CreateView
 from hive_activities.activities.models import Activity
@@ -19,20 +19,23 @@ class NoteCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['activity'] = self.activity
+
         return context
 
     def dispatch(self, request, *args, **kwargs):
         self.activity = get_object_or_404(Activity, pk=self.kwargs['pk'])
+
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.activity = self.activity
         form.instance.created_by = self.request.user
+
         response = super().form_valid(form)
         post_save.send(sender=Note, instance=form.instance, created=True, request=self.request)
+
         return response
 
     def get_success_url(self):
-        return reverse('activities:activity_detail',
-                       kwargs={'pk': self.activity.pk})
+        return reverse('activities:activity_detail', kwargs={'pk': self.activity.pk})
 

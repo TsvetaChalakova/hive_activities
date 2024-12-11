@@ -7,6 +7,7 @@ User = get_user_model()
 
 
 class Note(models.Model):
+
     activity = models.ForeignKey(
         Activity,
         on_delete=models.CASCADE,

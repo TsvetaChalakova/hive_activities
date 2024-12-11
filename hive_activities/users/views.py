@@ -17,6 +17,7 @@ UserModel = get_user_model()
 
 
 class HiveLoginView(LoginView):
+
     template_name = 'users/01_login.html'
     redirect_authenticated_user = True
     authentication_form = HiveActivitiesAuthenticationForm
@@ -24,6 +25,7 @@ class HiveLoginView(LoginView):
 
     def form_valid(self, form):
         user = form.get_user()
+
         if not user.is_active:
             messages.error(
                 self.request,
@@ -33,14 +35,17 @@ class HiveLoginView(LoginView):
 
         if not form.cleaned_data.get('remember_me', False):
             self.request.session.set_expiry(0)
+
         return super().form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, "Invalid email or password.")
+
         return super().form_invalid(form)
 
 
 class SignUpView(CreateView):
+
     model = UserModel
     form_class = AppUserCreationForm
     template_name = 'users/03_signup.html'
@@ -49,6 +54,7 @@ class SignUpView(CreateView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect('activities:team_dashboard')
+
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -86,13 +92,16 @@ class ProfileDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+
         context['projects'] = user.projects.count()
         context['activities'] = user.assigned_activities.count()
         context['notifications'] = user.notifications.count()
+
         return context
 
 
 class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+
     model = UserProfile
     form_class = ProfileEditForm
     template_name = 'users/05_profile_edit.html'
@@ -102,27 +111,28 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def handle_no_permission(self):
         messages.error(self.request, "You are not authorized to edit this profile.")
+
         return redirect('activities:team_dashboard')
 
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, "Your profile has been successfully updated!")
+
         return response
 
     def get_success_url(self):
-        return reverse_lazy(
-            'users:profile-detail',
-            kwargs={'pk': self.object.pk},
-        )
+        return reverse_lazy('users:profile-detail', kwargs={'pk': self.object.pk})
 
 
 class ProfileDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+
     model = UserProfile
     template_name = 'users/06_profile_delete.html'
     success_url = reverse_lazy('activities:home')
 
     def test_func(self):
         profile = get_object_or_404(UserProfile, pk=self.kwargs['pk'])
+
         return self.request.user == profile.user
 
     def form_valid(self, form):
@@ -137,6 +147,7 @@ class ProfileDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
 class RoleRequestView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+
     model = RoleRequest
     fields = ['requested_role']
     template_name = 'users/07_request_role_change.html'
@@ -146,6 +157,7 @@ class RoleRequestView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def handle_no_permission(self):
         messages.error(self.request, "Only team members can request role changes.")
+
         return redirect('activities:team_dashboard')
 
     def form_valid(self, form):
@@ -153,16 +165,19 @@ class RoleRequestView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
         if RoleRequest.objects.filter(user=self.request.user, approved__isnull=True).exists():
             messages.error(self.request, "You already have a pending request.")
+
             return redirect('activities:team_dashboard')
 
         return super().form_valid(form)
 
     def get_success_url(self):
         messages.success(self.request, "Your role request has been submitted.")
+
         return reverse_lazy('activities:team_dashboard')
 
 
 class RoleRequestManagementView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+
     model = RoleRequest
     template_name = 'users/08_role_requests_management.html'
     context_object_name = 'role_requests'
@@ -208,6 +223,7 @@ class RoleRequestManagementView(LoginRequiredMixin, UserPassesTestMixin, ListVie
 
 
 class HivePasswordResetView(PasswordResetView):
+
     template_name = 'users/password/password_reset_form.html'
     email_template_name = 'users/password/password_reset_email.html'
     success_url = reverse_lazy('users:password_reset_done')
@@ -218,6 +234,7 @@ class HivePasswordResetDoneView(PasswordResetDoneView):
 
 
 class HivePasswordResetConfirmView(PasswordResetConfirmView):
+
     template_name = 'users/password/password_reset_confirm.html'
     success_url = reverse_lazy('users:password_reset_complete')
 
@@ -232,6 +249,7 @@ class HivePasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, "Your password has been successfully updated!")
+
         return response
 
     def get_success_url(self):

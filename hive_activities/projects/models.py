@@ -1,13 +1,13 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth import get_user_model
-
 from hive_activities.core.validators import validate_due_date_after_start_date, validate_no_special_characters
 
 User = get_user_model()
 
 
 class Project(models.Model):
+
     STATUS_CHOICES = [
         ('IN_PROGRESS', 'In Progress'),
         ('ON_HOLD', 'On Hold'),
@@ -74,6 +74,7 @@ class Project(models.Model):
 
 
 class ProjectMembership(models.Model):
+
     ROLES = (
         ('MEMBER', 'Team Member'),
         ('MANAGER', 'Project Manager'),

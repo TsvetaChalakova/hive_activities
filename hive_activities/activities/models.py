@@ -2,7 +2,6 @@ from celery.utils.time import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
-
 from hive_activities.core.validators import validate_no_special_characters
 from hive_activities.projects.models import Project
 
@@ -10,6 +9,7 @@ User = get_user_model()
 
 
 class Activity(models.Model):
+
     STATUS_CHOICES = [
         ('TO_DO', 'To Do'),
         ('IN_PROGRESS', 'In Progress'),

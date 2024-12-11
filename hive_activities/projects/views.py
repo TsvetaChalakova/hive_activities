@@ -12,16 +12,15 @@ User = get_user_model()
 
 
 class ProjectListView(LoginRequiredMixin, ListView):
+
     model = Project
     template_name = 'projects/01_project_list.html'
     context_object_name = 'projects'
     paginate_by = 10
 
-    def get_queryset(self):
-        return Project.objects.filter(team_members=self.request.user)
-
 
 class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+
     model = Project
     form_class = ProjectForm
     template_name = 'projects/02_add_project_form.html'
@@ -33,6 +32,7 @@ class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     def form_valid(self, form):
         form.instance.manager = self.request.user
         response = super().form_valid(form)
+
         ProjectMembership.objects.create(
             project=self.object,
             user=self.request.user,
@@ -42,6 +42,7 @@ class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
 
 class ProjectDetailView(LoginRequiredMixin, DetailView):
+
     model = Project
     template_name = 'projects/03_project_detail.html'
     context_object_name = 'project'
@@ -71,6 +72,7 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
 
 
 class ProjectUpdateView(LoginRequiredMixin, UpdateView):
+
     model = Project
     form_class = ProjectForm
     template_name = 'projects/02_add_project_form.html'
@@ -80,12 +82,14 @@ class ProjectUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class AddProjectMemberView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+
     model = ProjectMembership
     form_class = ProjectMembershipForm
     template_name = 'projects/04_add_project_member.html'
 
     def dispatch(self, request, *args, **kwargs):
         self.project = get_object_or_404(Project, pk=self.kwargs['pk'])
+
         return super().dispatch(request, *args, **kwargs)
 
     def test_func(self):
@@ -94,6 +98,7 @@ class AddProjectMemberView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['project'] = self.project
+
         return context
 
     def get_form(self, form_class=None):
@@ -106,6 +111,7 @@ class AddProjectMemberView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.project = self.project
+
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -113,12 +119,14 @@ class AddProjectMemberView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
 
 class RemoveProjectMemberView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+
     model = ProjectMembership
     template_name = 'projects/05_remove_project_member.html'
 
     def dispatch(self, request, *args, **kwargs):
         self.project = get_object_or_404(Project, pk=self.kwargs['project_pk'])
         self.membership = get_object_or_404(ProjectMembership, pk=self.kwargs['pk'], project=self.project)
+
         return super().dispatch(request, *args, **kwargs)
 
     def test_func(self):
@@ -128,6 +136,7 @@ class RemoveProjectMemberView(LoginRequiredMixin, UserPassesTestMixin, DeleteVie
         context = super().get_context_data(**kwargs)
         context['project'] = self.project
         context['membership'] = self.membership
+
         return context
 
     def get_object(self, queryset=None):

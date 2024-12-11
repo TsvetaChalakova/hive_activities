@@ -4,8 +4,8 @@ from django.views.generic import ListView
 from hive_activities.notifications.models import Notification
 
 
-# Create your views here.
 class NotificationListView(LoginRequiredMixin, ListView):
+
     model = Notification
     template_name = 'notifications/notification_list.html'
     context_object_name = 'notifications'

@@ -3,13 +3,18 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, TemplateView
 from django.contrib import messages
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from hive_activities.activities.forms import IndividualActivityForm, LoggedInUserActivityForm
 from hive_activities.activities.models import Activity
+from hive_activities.activities.custom_permissions import IsNotViewer
+from hive_activities.activities.serializers import ActivitySerializer
 from hive_activities.core.helpers import export_data
 from hive_activities.notes.models import Note
 from hive_activities.projects.models import Project
@@ -17,10 +22,6 @@ from hive_activities.projects.models import Project
 
 def home(request):
     return render(request, 'activities/01_home.html')
-
-
-def custom_404_view(request, exception=None):
-    return render(request, 'common/404.html', status=404)
 
 
 class SearchResultsView(LoginRequiredMixin, TemplateView):
@@ -31,6 +32,7 @@ class SearchResultsView(LoginRequiredMixin, TemplateView):
         query = self.request.GET.get('q', '')
 
         if query:
+
             projects = Project.objects.filter(
                 Q(title__icontains=query) |
                 Q(description__icontains=query),
@@ -62,6 +64,7 @@ def individual_view(request):
 
     if not is_authenticated and not request.session.session_key:
         request.session.create()
+
         messages.warning(
             request,
             'Note: Activities created here will be deleted when your session expires. '
@@ -102,6 +105,7 @@ def individual_view(request):
     export_format = request.GET.get('export')
 
     headers = ['Title', 'Description', 'Due Date', 'Priority', 'Status', 'Created At']
+
     row_data = lambda activity: [
         activity.title,
         activity.description,
@@ -128,6 +132,7 @@ def individual_view(request):
 @require_http_methods(["POST"])
 @csrf_protect
 def update_activity_status(request, pk):
+
     try:
         activity_query = Activity.objects.filter(id=pk)
 
@@ -162,12 +167,16 @@ def update_activity_status(request, pk):
         })
 
     except Activity.DoesNotExist:
+
         return JsonResponse({
             'success': False,
             'error': 'Activity not found'
         }, status=404)
+
     except Exception as e:
+
         print(f"Error updating activity status: {str(e)}")
+
         return JsonResponse({
             'success': False,
             'error': str(e)
@@ -242,6 +251,7 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
 
     def post(self, request, *args, **kwargs):
         form = LoggedInUserActivityForm(request.POST)
+
         if form.is_valid():
             activity = form.save(commit=False)
 
@@ -258,43 +268,39 @@ class TeamDashboardView(LoginRequiredMixin, ListView):
         return self.get(request, *args, **kwargs)
 
 
-class ActivityCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class ActivityCreateAPIView(generics.CreateAPIView):
     model = Activity
-    form_class = IndividualActivityForm
-    template_name = 'activities/05_modal_create_activity.html'
-    success_message = "Activity was created successfully!"
-    success_url = reverse_lazy('activities:team_dashboard')
+    serializer_class = ActivitySerializer
+    permission_classes = [IsAuthenticated, IsNotViewer]
 
-    def test_func(self):
-        return not self.request.user.is_viewer()
+    def create(self, request, *args, **kwargs):
 
-    def form_valid(self, form):
-        form.instance.created_by = self.request.user
-        form.instance.assigned_to = self.request.user
-        project_id = self.request.POST.get('project')
-        if project_id:
-            form.instance.project_id = project_id
+        serializer = self.get_serializer(data=request.data)
 
-        response = super().form_valid(form)
+        if serializer.is_valid():
+            self.perform_create(serializer)
 
-        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
+            return Response({
                 'status': 'success',
-                'message': self.success_message,
-                'redirect_url': 'activities:team_dashboard',
+                'message': "Activity was created successfully!",
+                'redirect_url': reverse_lazy('activities:team_dashboard'),
             })
-        return response
 
-    def form_invalid(self, form):
-        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'status': 'error',
-                'errors': form.errors
-            }, status=400)
-        return super().form_invalid(form)
+        return Response({
+            'status': 'error',
+            'errors': serializer.errors
+        }, status=400)
+
+    def perform_create(self, serializer):
+        project_id = self.request.data.get('project')
+
+        serializer.save(
+            created_by=self.request.user,
+            assigned_to=self.request.user,
+            project_id=project_id if project_id else None
+        )
 
 
-# Keep your current authenticated view
 class ActivityDetailView(LoginRequiredMixin, DetailView):
     model = Activity
     template_name = 'activities/06_activity_detail.html'
@@ -328,4 +334,7 @@ class ActivityUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('activities:activity_detail', kwargs={'pk': self.object.pk})
+
+
+
 
