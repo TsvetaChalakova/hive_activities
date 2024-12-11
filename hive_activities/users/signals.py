@@ -25,12 +25,12 @@ def create_groups_and_permissions(sender, **kwargs):
         group.permissions.set(permissions)
 
 
-@receiver(post_save, sender=None)
-def create_user_profile(sender, instance, created, **kwargs):
+# @receiver(post_save, sender=None) #not needed due to handling through form.
+# def create_user_profile(sender, instance, created, **kwargs):
 
-    User = get_user_model()
+#     User = get_user_model()
 
-    if sender == User and created:
-        UserProfile = apps.get_model('users', 'UserProfile')
-        UserProfile.objects.get_or_create(user=instance)
+#     if sender == User and created:
+#         UserProfile = apps.get_model('users', 'UserProfile')
+#         UserProfile.objects.get_or_create(user=instance)
 
